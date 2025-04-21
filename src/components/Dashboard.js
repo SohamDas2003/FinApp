@@ -25,6 +25,7 @@ import {
 	Legend,
 } from "chart.js";
 import { Line, Bar, Pie, Doughnut } from "react-chartjs-2";
+import News from "./News";
 
 // Register ChartJS components
 ChartJS.register(
@@ -394,6 +395,9 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
 						<span className="nav-text">Logout</span>
 					</li>
 				</ul>
+				
+				{/* News Section */}
+				<News />
 			</div>
 
 			{/* Main Content */}

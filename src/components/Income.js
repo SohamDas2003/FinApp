@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { Line } from "react-chartjs-2";
 import "../styles/App.css";
+import News from "./News";
 
 const Income = ({ user, onLogout, onNavigate }) => {
 	const [activeTab, setActiveTab] = useState("income");
@@ -292,6 +293,9 @@ const Income = ({ user, onLogout, onNavigate }) => {
 						<span className="nav-text">Logout</span>
 					</li>
 				</ul>
+				
+				{/* News Section */}
+				<News />
 			</div>
 
 			{/* Main Content */}

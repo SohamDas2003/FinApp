@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa";
 import { Line, Doughnut } from "react-chartjs-2";
 import "../styles/App.css";
+import News from "./News";
 
 const Investments = ({ user, onLogout, onNavigate }) => {
 	const [activeTab, setActiveTab] = useState("investments");
@@ -341,6 +342,9 @@ const Investments = ({ user, onLogout, onNavigate }) => {
 						<span className="nav-text">Logout</span>
 					</li>
 				</ul>
+
+				{/* News Section */}
+				<News />
 			</div>
 
 			{/* Main Content */}

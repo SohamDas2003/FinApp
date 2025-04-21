@@ -12,7 +12,19 @@ import {
 	FaArrowDown,
 	FaMoneyBillWave,
 } from "react-icons/fa";
+import {
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend,
+	ArcElement,
+} from "chart.js";
 import { Line, Pie } from "react-chartjs-2";
+import News from "./News";
 import "../styles/App.css";
 
 const Expenses = ({ user, onLogout, onNavigate }) => {
@@ -404,6 +416,8 @@ const Expenses = ({ user, onLogout, onNavigate }) => {
 						<span className="nav-text">Logout</span>
 					</li>
 				</ul>
+
+				<News />
 			</div>
 
 			{/* Main Content */}
