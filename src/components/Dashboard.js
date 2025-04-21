@@ -10,6 +10,7 @@ import {
 	FaArrowDown,
 	FaLightbulb,
 	FaSignOutAlt,
+	FaMoneyBillWave,
 } from "react-icons/fa";
 import {
 	Chart as ChartJS,
@@ -38,7 +39,7 @@ ChartJS.register(
 	Legend
 );
 
-const Dashboard = ({ user, onLogout }) => {
+const Dashboard = ({ user, onLogout, onNavigate }) => {
 	const [activeTab, setActiveTab] = useState("overview");
 	const [activeFilter, setActiveFilter] = useState("all");
 	const [userData, setUserData] = useState(user);
@@ -356,25 +357,33 @@ const Dashboard = ({ user, onLogout }) => {
 					</li>
 					<li
 						className={`nav-item ${activeTab === "income" ? "active" : ""}`}
-						onClick={() => setActiveTab("income")}>
+						onClick={() => onNavigate("income")}>
 						<FaWallet className="nav-icon" />
 						<span className="nav-text">Income</span>
 					</li>
 					<li
 						className={`nav-item ${activeTab === "expenses" ? "active" : ""}`}
-						onClick={() => setActiveTab("expenses")}>
+						onClick={() => onNavigate("expenses")}>
 						<FaExchangeAlt className="nav-icon" />
 						<span className="nav-text">Expenses</span>
 					</li>
 					<li
+						className={`nav-item ${
+							activeTab === "investments" ? "active" : ""
+						}`}
+						onClick={() => onNavigate("investments")}>
+						<FaMoneyBillWave className="nav-icon" />
+						<span className="nav-text">Investments</span>
+					</li>
+					<li
 						className={`nav-item ${activeTab === "cards" ? "active" : ""}`}
-						onClick={() => setActiveTab("cards")}>
+						onClick={() => onNavigate("cards")}>
 						<FaRegCreditCard className="nav-icon" />
 						<span className="nav-text">Cards & Accounts</span>
 					</li>
 					<li
 						className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
-						onClick={() => setActiveTab("settings")}>
+						onClick={() => onNavigate("settings")}>
 						<FaCog className="nav-icon" />
 						<span className="nav-text">Settings</span>
 					</li>

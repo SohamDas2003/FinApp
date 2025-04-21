@@ -27,6 +27,9 @@ import "./styles/App.css";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Dashboard from "./components/Dashboard";
+import Income from "./components/Income";
+import Expenses from "./components/Expenses";
+import Investments from "./components/Investments";
 import ProfileSetup from "./components/ProfileSetup";
 
 // Register ChartJS components
@@ -50,6 +53,7 @@ function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
 	const [showLogin, setShowLogin] = useState(true);
 	const [currentUser, setCurrentUser] = useState(null);
+	const [currentPage, setCurrentPage] = useState("dashboard");
 	const [activeTab, setActiveTab] = useState("overview");
 	const [activeFilter, setActiveFilter] = useState("all");
 	const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
@@ -115,6 +119,10 @@ function App() {
 		localStorage.removeItem("finapp_user");
 	};
 
+	const handleNavigate = (page) => {
+		setCurrentPage(page);
+	};
+
 	// Check if user is already logged in (from localStorage)
 	useEffect(() => {
 		const storedUser = localStorage.getItem("finapp_user");
@@ -178,6 +186,7 @@ function App() {
 		isAuthenticated,
 		needsProfileSetup,
 		currentUser: currentUser?.email,
+		currentPage,
 	});
 
 	// Determine which component to show
@@ -191,12 +200,41 @@ function App() {
 	}
 
 	if (isAuthenticated && currentUser) {
-		return (
-			<Dashboard
-				user={currentUser}
-				onLogout={handleLogout}
-			/>
-		);
+		switch (currentPage) {
+			case "income":
+				return (
+					<Income
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
+			case "expenses":
+				return (
+					<Expenses
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
+			case "investments":
+				return (
+					<Investments
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
+			case "dashboard":
+			default:
+				return (
+					<Dashboard
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
+		}
 	}
 
 	// Show either login or register form
