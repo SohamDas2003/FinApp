@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from "react";
 import {
-	FaChartLine,
-	FaWallet,
-	FaExchangeAlt,
-	FaRegCreditCard,
-	FaCog,
 	FaRegCalendarAlt,
-	FaSignOutAlt,
 	FaPlus,
 	FaArrowUp,
 	FaArrowDown,
 } from "react-icons/fa";
 import { Line } from "react-chartjs-2";
 import "../styles/App.css";
-import News from "./News";
 
-const Income = ({ user, onLogout, onNavigate }) => {
+const Income = ({ user }) => {
 	const [activeTab, setActiveTab] = useState("income");
 	const [incomeData, setIncomeData] = useState([]);
 	const [newIncome, setNewIncome] = useState({
@@ -30,65 +23,10 @@ const Income = ({ user, onLogout, onNavigate }) => {
 		const storedUser = JSON.parse(localStorage.getItem("finapp_user"));
 		if (storedUser && storedUser.incomeData) {
 			setIncomeData(storedUser.incomeData);
-		} else if (user.financialDetails) {
-			// Generate some example income data based on user's financial details
-			const monthlyIncome = user.financialDetails.monthlyIncome || 0;
-			const salary = user.financialDetails.salary?.amount || 0;
-
-			const today = new Date();
-			const last6Months = Array.from({ length: 6 }, (_, i) => {
-				const date = new Date();
-				date.setMonth(today.getMonth() - i);
-				return date.toISOString().slice(0, 7); // YYYY-MM format
-			}).reverse();
-
-			const generatedData = [
-				{
-					source: "Salary",
-					amount: salary || monthlyIncome * 0.8,
-					date: today.toISOString().slice(0, 10),
-					recurring: true,
-				},
-			];
-
-			// Add some past income entries
-			last6Months.forEach((monthDate, index) => {
-				const pastDate = new Date(monthDate + "-01");
-				pastDate.setDate(Math.floor(Math.random() * 28) + 1);
-
-				generatedData.push({
-					source: "Salary",
-					amount: (salary || monthlyIncome * 0.8) * (0.95 + index * 0.01),
-					date: pastDate.toISOString().slice(0, 10),
-					recurring: true,
-				});
-
-				// Add occasional additional income
-				if (index % 2 === 0) {
-					const bonusDate = new Date(monthDate + "-01");
-					bonusDate.setDate(Math.floor(Math.random() * 28) + 1);
-
-					generatedData.push({
-						source: "Side Project",
-						amount: monthlyIncome * 0.1 * (1 + Math.random() * 0.4),
-						date: bonusDate.toISOString().slice(0, 10),
-						recurring: false,
-					});
-				}
-			});
-
-			setIncomeData(generatedData);
-
-			// Save this data
-			const updatedUser = {
-				...storedUser,
-				incomeData: generatedData,
-			};
-			localStorage.setItem("finapp_user", JSON.stringify(updatedUser));
 		}
-	}, [user]);
+	}, []);
 
-	// Format numbers to currency format
+	// Format currency
 	const formatCurrency = (amount) => {
 		return new Intl.NumberFormat("en-IN", {
 			style: "currency",
@@ -97,79 +35,101 @@ const Income = ({ user, onLogout, onNavigate }) => {
 		}).format(amount);
 	};
 
+	// Handle form input changes
 	const handleInputChange = (e) => {
-		const { name, value } = e.target;
 		setNewIncome({
 			...newIncome,
-			[name]: value,
+			[e.target.name]: e.target.value,
 		});
 	};
 
+	// Add new income entry
 	const handleAddIncome = (e) => {
 		e.preventDefault();
 
 		if (!newIncome.source || !newIncome.amount || !newIncome.date) {
-			alert("Please fill in all fields");
+			alert("Please fill all fields");
 			return;
 		}
 
-		const incomeEntry = {
-			...newIncome,
-			amount: parseFloat(newIncome.amount),
-			recurring: false,
-		};
+		const updatedIncomeData = [
+			...incomeData,
+			{
+				id: `income-${Date.now()}`,
+				...newIncome,
+				amount: parseFloat(newIncome.amount),
+			},
+		];
 
-		const updatedIncomeData = [...incomeData, incomeEntry];
 		setIncomeData(updatedIncomeData);
 
 		// Save to localStorage
 		const storedUser = JSON.parse(localStorage.getItem("finapp_user"));
-		const updatedUser = {
-			...storedUser,
-			incomeData: updatedIncomeData,
-		};
-		localStorage.setItem("finapp_user", JSON.stringify(updatedUser));
+		if (storedUser) {
+			storedUser.incomeData = updatedIncomeData;
+			localStorage.setItem("finapp_user", JSON.stringify(storedUser));
+		}
 
 		// Reset form
-		setNewIncome({
-			source: "",
-			amount: "",
-			date: "",
-		});
+		setNewIncome({ source: "", amount: "", date: "" });
 		setShowAddForm(false);
 	};
 
-	// Prepare chart data
-	const prepareChartData = () => {
-		// Group by month
-		const sortedData = [...incomeData].sort(
-			(a, b) => new Date(a.date) - new Date(b.date)
-		);
+	// Delete income entry
+	const handleDeleteIncome = (id) => {
+		const updatedIncomeData = incomeData.filter((item) => item.id !== id);
+		setIncomeData(updatedIncomeData);
 
-		const monthlyTotals = {};
-		sortedData.forEach((item) => {
-			const month = item.date.slice(0, 7); // YYYY-MM
-			monthlyTotals[month] = (monthlyTotals[month] || 0) + item.amount;
+		// Save to localStorage
+		const storedUser = JSON.parse(localStorage.getItem("finapp_user"));
+		if (storedUser) {
+			storedUser.incomeData = updatedIncomeData;
+			localStorage.setItem("finapp_user", JSON.stringify(storedUser));
+		}
+	};
+
+	// Prepare data for the chart
+	const prepareChartData = () => {
+		// Create a map to store income by month
+		const monthlyIncome = new Map();
+
+		// Group income by month and sum up
+		incomeData.forEach((item) => {
+			const month = item.date.substring(0, 7); // YYYY-MM format
+			if (monthlyIncome.has(month)) {
+				monthlyIncome.set(month, monthlyIncome.get(month) + item.amount);
+			} else {
+				monthlyIncome.set(month, item.amount);
+			}
 		});
 
-		const labels = Object.keys(monthlyTotals).sort();
-		const data = labels.map((month) => monthlyTotals[month]);
+		// Sort months chronologically
+		const sortedMonths = Array.from(monthlyIncome.keys()).sort();
 
-		// Get month names for display
-		const monthNames = labels.map((month) => {
-			const date = new Date(month + "-01");
-			return date.toLocaleString("default", {
+		// Format months for display (convert YYYY-MM to Month Year)
+		const formattedMonths = sortedMonths.map((month) => {
+			const date = new Date(`${month}-01`);
+			return date.toLocaleDateString("en-US", {
 				month: "short",
 				year: "numeric",
 			});
 		});
 
+		// Get amounts in the same order as the sorted months
+		const amounts = sortedMonths.map((month) => monthlyIncome.get(month));
+
+		// If we have less than 2 months of data, add some dummy data for better visualization
+		if (sortedMonths.length < 2) {
+			formattedMonths.unshift("Previous");
+			amounts.unshift(0);
+		}
+
 		return {
-			labels: monthNames,
+			labels: formattedMonths,
 			datasets: [
 				{
-					label: "Monthly Income",
-					data: data,
+					label: "Income",
+					data: amounts,
 					borderColor: "#36f9ae",
 					backgroundColor: "rgba(54, 249, 174, 0.1)",
 					tension: 0.4,
@@ -242,317 +202,271 @@ const Income = ({ user, onLogout, onNavigate }) => {
 	const { total, average } = calculateStats();
 
 	return (
-		<div className="app-container">
-			{/* Sidebar */}
-			<div className="sidebar">
-				<div className="profile">
+		<>
+			{/* Header */}
+			<div className="header">
+				<h1>Income Management</h1>
+				<div className="user-info">
+					<h3>{user.name}</h3>
 					<img
 						src={user.profilePic}
 						alt="Profile"
-						className="profile-image"
+						className="profile-image-small"
 					/>
-					<h3 className="profile-name">{user.name}</h3>
-					<p className="profile-subtitle">Personal Budget</p>
 				</div>
-
-				<ul className="nav-menu">
-					<li
-						className={`nav-item ${activeTab === "overview" ? "active" : ""}`}
-						onClick={() => onNavigate("dashboard")}>
-						<FaChartLine className="nav-icon" />
-						<span className="nav-text">Dashboard</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "income" ? "active" : ""}`}
-						onClick={() => setActiveTab("income")}>
-						<FaWallet className="nav-icon" />
-						<span className="nav-text">Income</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "expenses" ? "active" : ""}`}
-						onClick={() => onNavigate("expenses")}>
-						<FaExchangeAlt className="nav-icon" />
-						<span className="nav-text">Expenses</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "cards" ? "active" : ""}`}
-						onClick={() => onNavigate("cards")}>
-						<FaRegCreditCard className="nav-icon" />
-						<span className="nav-text">Cards & Accounts</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
-						onClick={() => onNavigate("settings")}>
-						<FaCog className="nav-icon" />
-						<span className="nav-text">Settings</span>
-					</li>
-					<li
-						className="nav-item logout-item"
-						onClick={onLogout}>
-						<FaSignOutAlt className="nav-icon" />
-						<span className="nav-text">Logout</span>
-					</li>
-				</ul>
-				
-				{/* News Section */}
-				<News />
 			</div>
 
-			{/* Main Content */}
-			<div className="main-content">
-				<div className="finance-analytics">
-					{/* Header */}
-					<div className="header">
-						<h2 className="header-title">Income Management</h2>
-						<div className="header-right">
-							<div className="date-range">
-								<FaRegCalendarAlt style={{ marginRight: "5px" }} />
-								Last 6 Months
-							</div>
-							<button
-								className="add-button"
-								onClick={() => setShowAddForm(!showAddForm)}
+			{/* Tab Menu */}
+			<div className="tab-menu">
+				<div
+					className={`tab ${activeTab === "income" ? "active" : ""}`}
+					onClick={() => setActiveTab("income")}
+				>
+					All Income
+				</div>
+				<div
+					className={`tab ${activeTab === "recurring" ? "active" : ""}`}
+					onClick={() => setActiveTab("recurring")}
+				>
+					Recurring
+				</div>
+				<div
+					className={`tab ${activeTab === "analysis" ? "active" : ""}`}
+					onClick={() => setActiveTab("analysis")}
+				>
+					Analysis
+				</div>
+				<div className="tab-spacer"></div>
+				<button
+					className="add-button"
+					onClick={() => setShowAddForm(!showAddForm)}
+					style={{
+						background: "#36f9ae",
+						border: "none",
+						borderRadius: "5px",
+						padding: "8px 15px",
+						color: "#000",
+						display: "flex",
+						alignItems: "center",
+						cursor: "pointer",
+						fontWeight: "bold",
+					}}>
+					<FaPlus style={{ marginRight: "5px" }} />
+					Add Income
+				</button>
+			</div>
+
+			{/* Finance Analytics */}
+			<div className="finance-analytics">
+				{/* Add Income Form */}
+				{showAddForm && (
+					<div className="dashboard-card card-full" style={{ marginBottom: "20px" }}>
+						<h3 className="card-title">Add New Income</h3>
+						<form onSubmit={handleAddIncome}>
+							<div
 								style={{
-									background: "var(--primary-color)",
-									border: "none",
-									borderRadius: "5px",
-									padding: "8px 15px",
-									color: "#000",
-									display: "flex",
-									alignItems: "center",
-									cursor: "pointer",
-									fontWeight: "bold",
+									display: "grid",
+									gridTemplateColumns: "1fr 1fr 1fr auto",
+									gap: "15px",
 								}}>
-								<FaPlus style={{ marginRight: "5px" }} />
-								Add Income
-							</button>
+								<div>
+									<label
+										htmlFor="source"
+										style={{ display: "block", marginBottom: "5px" }}>
+										Source
+									</label>
+									<input
+										type="text"
+										id="source"
+										name="source"
+										value={newIncome.source}
+										onChange={handleInputChange}
+										required
+										style={{
+											width: "100%",
+											padding: "8px",
+											borderRadius: "4px",
+											border: "1px solid var(--border-color)",
+											backgroundColor: "#2a2a2a",
+											color: "#fff",
+										}}
+									/>
+								</div>
+								<div>
+									<label
+										htmlFor="amount"
+										style={{ display: "block", marginBottom: "5px" }}>
+										Amount
+									</label>
+									<input
+										type="number"
+										id="amount"
+										name="amount"
+										value={newIncome.amount}
+										onChange={handleInputChange}
+										required
+										style={{
+											width: "100%",
+											padding: "8px",
+											borderRadius: "4px",
+											border: "1px solid var(--border-color)",
+											backgroundColor: "#2a2a2a",
+											color: "#fff",
+										}}
+									/>
+								</div>
+								<div>
+									<label
+										htmlFor="date"
+										style={{ display: "block", marginBottom: "5px" }}>
+										Date
+									</label>
+									<input
+										type="date"
+										id="date"
+										name="date"
+										value={newIncome.date}
+										onChange={handleInputChange}
+										required
+										style={{
+											width: "100%",
+											padding: "8px",
+											borderRadius: "4px",
+											border: "1px solid var(--border-color)",
+											backgroundColor: "#2a2a2a",
+											color: "#fff",
+										}}
+									/>
+								</div>
+								<div style={{ alignSelf: "end" }}>
+									<button
+										type="submit"
+										style={{
+											backgroundColor: "#36f9ae",
+											color: "#000",
+											border: "none",
+											borderRadius: "4px",
+											padding: "8px 15px",
+											cursor: "pointer",
+											fontWeight: "bold",
+										}}>
+										Add Income
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				)}
+
+				{/* Dashboard Grid */}
+				<div className="dashboard-grid">
+					<div className="dashboard-card card-wide">
+						<h3 className="card-title">Total Income</h3>
+						<div className="balance-amount">{formatCurrency(total)}</div>
+						<div className="balance-label">Total income recorded</div>
+					</div>
+
+					<div className="dashboard-card card-wide">
+						<h3 className="card-title">Monthly Average</h3>
+						<div className="balance-amount">{formatCurrency(average)}</div>
+						<div className="balance-label">Average monthly income</div>
+					</div>
+
+					<div className="dashboard-card card-wide">
+						<h3 className="card-title">Last Income</h3>
+						<div className="balance-amount">
+							{incomeData.length > 0
+								? formatCurrency(
+										incomeData.sort(
+											(a, b) => new Date(b.date) - new Date(a.date)
+										)[0].amount
+									)
+								: "₹0"}
+						</div>
+						<div className="balance-label">
+							{incomeData.length > 0
+								? `On ${new Date(
+										incomeData.sort(
+											(a, b) => new Date(b.date) - new Date(a.date)
+										)[0].date
+									).toLocaleDateString()}`
+								: "No records yet"}
 						</div>
 					</div>
 
-					{/* Dashboard Grid */}
-					<div className="dashboard-grid">
-						{/* Add Income Form */}
-						{showAddForm && (
-							<div
-								className="dashboard-card card-full"
-								style={{ padding: "20px" }}>
-								<h3 className="card-title">Add New Income</h3>
-								<form
-									onSubmit={handleAddIncome}
-									className="income-form">
-									<div
-										className="form-row"
-										style={{
-											display: "flex",
-											gap: "15px",
-											marginBottom: "15px",
-										}}>
-										<div
-											className="form-group"
-											style={{ flex: 1 }}>
-											<label>Income Source</label>
-											<input
-												type="text"
-												name="source"
-												value={newIncome.source}
-												onChange={handleInputChange}
-												style={{
-													width: "100%",
-													padding: "10px",
-													backgroundColor: "#2d2d2d",
-													border: "1px solid var(--border-color)",
-													borderRadius: "5px",
-													color: "var(--text-light)",
-												}}
-												placeholder="Salary, Freelance, etc."
-											/>
-										</div>
-										<div
-											className="form-group"
-											style={{ flex: 1 }}>
-											<label>Amount</label>
-											<input
-												type="number"
-												name="amount"
-												value={newIncome.amount}
-												onChange={handleInputChange}
-												style={{
-													width: "100%",
-													padding: "10px",
-													backgroundColor: "#2d2d2d",
-													border: "1px solid var(--border-color)",
-													borderRadius: "5px",
-													color: "var(--text-light)",
-												}}
-												placeholder="Income amount"
-											/>
-										</div>
-										<div
-											className="form-group"
-											style={{ flex: 1 }}>
-											<label>Date</label>
-											<input
-												type="date"
-												name="date"
-												value={newIncome.date}
-												onChange={handleInputChange}
-												style={{
-													width: "100%",
-													padding: "10px",
-													backgroundColor: "#2d2d2d",
-													border: "1px solid var(--border-color)",
-													borderRadius: "5px",
-													color: "var(--text-light)",
-												}}
-											/>
-										</div>
-									</div>
-									<div
-										className="form-buttons"
-										style={{
-											display: "flex",
-											justifyContent: "flex-end",
-											gap: "10px",
-										}}>
-										<button
-											type="button"
-											onClick={() => setShowAddForm(false)}
+					{/* Income Chart */}
+					<div className="dashboard-card card-full">
+						<h3 className="card-title">Income Trend</h3>
+						<div style={{ height: "400px", position: "relative" }}>
+							<Line
+								data={prepareChartData()}
+								options={chartOptions}
+							/>
+						</div>
+					</div>
+
+					{/* Income List */}
+					<div className="dashboard-card card-full">
+						<h3 className="card-title">Income History</h3>
+						<div className="income-list">
+							<table style={{ width: "100%", borderCollapse: "collapse" }}>
+								<thead>
+									<tr>
+										<th
 											style={{
-												padding: "10px 20px",
-												backgroundColor: "#3d3d3d",
-												border: "none",
-												borderRadius: "5px",
-												color: "var(--text-light)",
-												cursor: "pointer",
+												textAlign: "left",
+												padding: "10px",
+												borderBottom: "1px solid var(--border-color)",
 											}}>
-											Cancel
-										</button>
-										<button
-											type="submit"
+											Date
+										</th>
+										<th
 											style={{
-												padding: "10px 20px",
-												backgroundColor: "var(--primary-color)",
-												border: "none",
-												borderRadius: "5px",
-												color: "#000",
-												cursor: "pointer",
-												fontWeight: "bold",
+												textAlign: "left",
+												padding: "10px",
+												borderBottom: "1px solid var(--border-color)",
 											}}>
-											Save Income
-										</button>
-									</div>
-								</form>
-							</div>
-						)}
-
-						{/* Income Stats Cards */}
-						<div className="dashboard-card card-wide">
-							<h3 className="card-title">Total Income</h3>
-							<div className="balance-amount profit">
-								{formatCurrency(total)}
-							</div>
-							<div className="balance-label">
-								From {incomeData.length} transactions
-							</div>
-						</div>
-
-						<div className="dashboard-card card-wide">
-							<h3 className="card-title">Monthly Average</h3>
-							<div className="balance-amount">{formatCurrency(average)}</div>
-							<div className="balance-label">Average monthly income</div>
-						</div>
-
-						<div className="dashboard-card card-wide">
-							<h3 className="card-title">Last Income</h3>
-							<div className="balance-amount">
-								{incomeData.length > 0
-									? formatCurrency(
-											incomeData.sort(
-												(a, b) => new Date(b.date) - new Date(a.date)
-											)[0].amount
-									  )
-									: "₹0"}
-							</div>
-							<div className="balance-label">
-								{incomeData.length > 0
-									? `On ${new Date(
-											incomeData.sort(
-												(a, b) => new Date(b.date) - new Date(a.date)
-											)[0].date
-									  ).toLocaleDateString()}`
-									: "No records yet"}
-							</div>
-						</div>
-
-						{/* Income Chart */}
-						<div className="dashboard-card card-full">
-							<h3 className="card-title">Income Trend</h3>
-							<div style={{ height: "400px", position: "relative" }}>
-								<Line
-									data={prepareChartData()}
-									options={chartOptions}
-								/>
-							</div>
-						</div>
-
-						{/* Income List */}
-						<div className="dashboard-card card-full">
-							<h3 className="card-title">Income History</h3>
-							<div className="income-list">
-								<table style={{ width: "100%", borderCollapse: "collapse" }}>
-									<thead>
-										<tr>
-											<th
-												style={{
-													textAlign: "left",
-													padding: "10px",
-													borderBottom: "1px solid var(--border-color)",
-												}}>
-												Date
-											</th>
-											<th
-												style={{
-													textAlign: "left",
-													padding: "10px",
-													borderBottom: "1px solid var(--border-color)",
-												}}>
-												Source
-											</th>
-											<th
-												style={{
-													textAlign: "right",
-													padding: "10px",
-													borderBottom: "1px solid var(--border-color)",
-												}}>
-												Amount
-											</th>
-											<th
-												style={{
-													textAlign: "center",
-													padding: "10px",
-													borderBottom: "1px solid var(--border-color)",
-												}}>
-												Status
-											</th>
-										</tr>
-									</thead>
-									<tbody>
-										{[...incomeData]
+											Source
+										</th>
+										<th
+											style={{
+												textAlign: "right",
+												padding: "10px",
+												borderBottom: "1px solid var(--border-color)",
+											}}>
+											Amount
+										</th>
+										<th
+											style={{
+												textAlign: "center",
+												padding: "10px",
+												borderBottom: "1px solid var(--border-color)",
+											}}>
+											Status
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{incomeData.length > 0 ? (
+										incomeData
 											.sort((a, b) => new Date(b.date) - new Date(a.date))
-											.slice(0, 10)
-											.map((income, index) => (
-												<tr key={index}>
+											.map((income) => (
+												<tr key={income.id}>
 													<td
 														style={{
 															padding: "10px",
-															borderBottom: "1px solid var(--border-color)",
+															borderBottom:
+																"1px solid var(--border-color)",
 														}}>
-														{new Date(income.date).toLocaleDateString()}
+														{new Date(
+															income.date
+														).toLocaleDateString()}
 													</td>
 													<td
 														style={{
 															padding: "10px",
-															borderBottom: "1px solid var(--border-color)",
+															borderBottom:
+																"1px solid var(--border-color)",
 														}}>
 														{income.source}
 													</td>
@@ -560,7 +474,10 @@ const Income = ({ user, onLogout, onNavigate }) => {
 														style={{
 															textAlign: "right",
 															padding: "10px",
-															borderBottom: "1px solid var(--border-color)",
+															borderBottom:
+																"1px solid var(--border-color)",
+															color: "#36f9ae",
+															fontWeight: "bold",
 														}}>
 														{formatCurrency(income.amount)}
 													</td>
@@ -568,50 +485,70 @@ const Income = ({ user, onLogout, onNavigate }) => {
 														style={{
 															textAlign: "center",
 															padding: "10px",
-															borderBottom: "1px solid var(--border-color)",
+															borderBottom:
+																"1px solid var(--border-color)",
 														}}>
-														{income.recurring ? (
+														<div
+															style={{
+																display: "flex",
+																alignItems: "center",
+																justifyContent: "center",
+																gap: "5px",
+															}}>
 															<span
 																style={{
-																	color: "var(--primary-color)",
+																	backgroundColor:
+																		"rgba(54, 249, 174, 0.2)",
+																	color: "#36f9ae",
+																	padding: "2px 8px",
+																	borderRadius: "4px",
+																	fontSize: "12px",
 																	display: "flex",
 																	alignItems: "center",
-																	justifyContent: "center",
 																}}>
-																<FaArrowUp style={{ marginRight: "5px" }} />{" "}
-																Recurring
+																<FaArrowUp
+																	style={{ marginRight: "3px" }}
+																/>
+																Received
 															</span>
-														) : (
-															<span
+															<button
+																onClick={() =>
+																	handleDeleteIncome(income.id)
+																}
 																style={{
-																	color: "#ff9f43",
-																	display: "flex",
-																	alignItems: "center",
-																	justifyContent: "center",
+																	background: "none",
+																	border: "none",
+																	color: "#ff5252",
+																	cursor: "pointer",
+																	fontSize: "14px",
+																	padding: "2px 5px",
 																}}>
-																One-time
-															</span>
-														)}
+																Delete
+															</button>
+														</div>
 													</td>
 												</tr>
-											))}
-										{incomeData.length === 0 && (
-											<tr>
-												<td
-													colSpan="4"
-													style={{ textAlign: "center", padding: "20px" }}>
-													No income data available
-												</td>
-											</tr>
-										)}
-									</tbody>
-								</table>
-							</div>
+											))
+									) : (
+										<tr>
+											<td
+												colSpan="4"
+												style={{
+													textAlign: "center",
+													padding: "20px",
+													color: "var(--text-secondary)",
+												}}>
+												No income records found. Add your first income!
+											</td>
+										</tr>
+									)}
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

@@ -9,6 +9,7 @@ import {
 	FaArrowUp,
 	FaArrowDown,
 	FaLightbulb,
+	FaSignOutAlt,
 } from "react-icons/fa";
 import {
 	Chart as ChartJS,
@@ -31,6 +32,8 @@ import Income from "./components/Income";
 import Expenses from "./components/Expenses";
 import Investments from "./components/Investments";
 import ProfileSetup from "./components/ProfileSetup";
+import Cards from "./components/Cards";
+import Account from "./components/Account";
 
 // Register ChartJS components
 ChartJS.register(
@@ -48,6 +51,82 @@ ChartJS.register(
 // Profile image placeholder
 const defaultProfileImage =
 	"https://th.bing.com/th/id/R.95c74e73a0802296ef631dd71dfa09d2?rik=eIiF8VmPmhhzXw&riu=http%3a%2f%2fwww.pngall.com%2fwp-content%2fuploads%2f5%2fUser-Profile-PNG-Image.png&ehk=YvjAOG2T71oFU41G13CCoak98yJU3f0YK669MQiOROg%3d&risl=&pid=ImgRaw&r=0";
+
+// Shared Layout component
+const SharedLayout = ({ user, onLogout, onNavigate, currentPage, children }) => {
+	return (
+		<div className="dashboard-container">
+			{/* Sidebar */}
+			<div className="sidebar">
+				<div className="sidebar-header">
+					<h2>FinApp</h2>
+				</div>
+				<div className="profile-section">
+					<img
+						src={user.profilePic}
+						alt="Profile"
+						className="profile-image"
+					/>
+					<h3>{user.name}</h3>
+					<p>{user.email}</p>
+				</div>
+				<div className="menu-items">
+					<div
+						className={`menu-item ${currentPage === "dashboard" ? "active" : ""}`}
+						onClick={() => onNavigate("dashboard")}
+					>
+						<FaChartLine />
+						<span>Dashboard</span>
+					</div>
+					<div
+						className={`menu-item ${currentPage === "income" ? "active" : ""}`}
+						onClick={() => onNavigate("income")}
+					>
+						<FaWallet />
+						<span>Income</span>
+					</div>
+					<div
+						className={`menu-item ${currentPage === "expenses" ? "active" : ""}`}
+						onClick={() => onNavigate("expenses")}
+					>
+						<FaExchangeAlt />
+						<span>Expenses</span>
+					</div>
+					<div
+						className={`menu-item ${currentPage === "cards" ? "active" : ""}`}
+						onClick={() => onNavigate("cards")}
+					>
+						<FaRegCreditCard />
+						<span>Cards</span>
+					</div>
+					<div
+						className={`menu-item ${currentPage === "investments" ? "active" : ""}`}
+						onClick={() => onNavigate("investments")}
+					>
+						<FaWallet />
+						<span>Investments</span>
+					</div>
+					<div
+						className={`menu-item ${currentPage === "account" ? "active" : ""}`}
+						onClick={() => onNavigate("account")}
+					>
+						<FaCog />
+						<span>Account</span>
+					</div>
+				</div>
+				<div className="logout-button" onClick={onLogout}>
+					<FaSignOutAlt />
+					<span>Logout</span>
+				</div>
+			</div>
+			
+			{/* Main Content */}
+			<div className="main-content">
+				{children}
+			</div>
+		</div>
+	);
+};
 
 function App() {
 	const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -200,41 +279,40 @@ function App() {
 	}
 
 	if (isAuthenticated && currentUser) {
+		let pageContent;
+		
 		switch (currentPage) {
 			case "income":
-				return (
-					<Income
-						user={currentUser}
-						onLogout={handleLogout}
-						onNavigate={handleNavigate}
-					/>
-				);
+				pageContent = <Income user={currentUser} />;
+				break;
 			case "expenses":
-				return (
-					<Expenses
-						user={currentUser}
-						onLogout={handleLogout}
-						onNavigate={handleNavigate}
-					/>
-				);
+				pageContent = <Expenses user={currentUser} />;
+				break;
 			case "investments":
-				return (
-					<Investments
-						user={currentUser}
-						onLogout={handleLogout}
-						onNavigate={handleNavigate}
-					/>
-				);
+				pageContent = <Investments user={currentUser} />;
+				break;
+			case "cards":
+				pageContent = <Cards user={currentUser} />;
+				break;
+			case "account":
+				pageContent = <Account user={currentUser} />;
+				break;
 			case "dashboard":
 			default:
-				return (
-					<Dashboard
-						user={currentUser}
-						onLogout={handleLogout}
-						onNavigate={handleNavigate}
-					/>
-				);
+				pageContent = <Dashboard user={currentUser} />;
+				break;
 		}
+		
+		return (
+			<SharedLayout 
+				user={currentUser} 
+				onLogout={handleLogout} 
+				onNavigate={handleNavigate}
+				currentPage={currentPage}
+			>
+				{pageContent}
+			</SharedLayout>
+		);
 	}
 
 	// Show either login or register form
@@ -250,6 +328,5 @@ function App() {
 		/>
 	);
 }
-
 
 export default App;
