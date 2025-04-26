@@ -9,6 +9,7 @@ import {
 	FaArrowUp,
 	FaArrowDown,
 	FaLightbulb,
+	FaFlag,
 } from "react-icons/fa";
 import {
 	Chart as ChartJS,
@@ -30,6 +31,8 @@ import Dashboard from "./components/Dashboard";
 import Income from "./components/Income";
 import Expenses from "./components/Expenses";
 import Investments from "./components/Investments";
+import Goals from "./components/Goals";
+import Settings from "./components/Settings";
 import ProfileSetup from "./components/ProfileSetup";
 
 // Register ChartJS components
@@ -225,6 +228,22 @@ function App() {
 						onNavigate={handleNavigate}
 					/>
 				);
+			case "goals":
+				return (
+					<Goals
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
+			case "settings":
+				return (
+					<Settings
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
 			case "dashboard":
 			default:
 				return (
@@ -250,6 +269,5 @@ function App() {
 		/>
 	);
 }
-
 
 export default App;

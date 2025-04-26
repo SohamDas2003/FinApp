@@ -26,7 +26,7 @@ A modern and responsive personal finance tracking application built with React.
 1. Clone the repository
 
 ```
-git clone https://github.com/yourusername/finapp.git
+git clone https://github.com/SohamDas/FinApp.git
 cd finapp
 ```
 

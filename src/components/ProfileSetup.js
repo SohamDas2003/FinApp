@@ -6,8 +6,12 @@ import {
 	FaArrowRight,
 	FaMoneyBillWave,
 	FaCalendarAlt,
+	FaEnvelope,
+	FaPhone,
 } from "react-icons/fa";
 import "../styles/Auth.css";
+
+const defaultProfileImage = "https://example.com/path/to/default/profile/image.png";
 
 const ProfileSetup = ({ user, onComplete }) => {
 	const [step, setStep] = useState(1);
@@ -31,6 +35,12 @@ const ProfileSetup = ({ user, onComplete }) => {
 		],
 	});
 	const [error, setError] = useState("");
+	const [userDetails, setUserDetails] = useState({
+		username: user?.username || "",
+		email: user?.email || "",
+		phoneNumber: "",
+		profilePhoto: user?.profilePic || defaultProfileImage,
+	});
 
 	const handleChange = (e) => {
 		const { name, value } = e.target;
@@ -58,6 +68,14 @@ const ProfileSetup = ({ user, onComplete }) => {
 		setFinancialDetails({
 			...financialDetails,
 			budgetCategories: updatedCategories,
+		});
+	};
+
+	const handleUserDetailsChange = (e) => {
+		const { name, value } = e.target;
+		setUserDetails({
+			...userDetails,
+			[name]: value,
 		});
 	};
 
@@ -108,6 +126,7 @@ const ProfileSetup = ({ user, onComplete }) => {
 			const updatedUserInfo = {
 				...userInfo,
 				financialDetails: processedFinancialDetails,
+				userDetails: userDetails,
 			};
 			localStorage.setItem("finapp_user", JSON.stringify(updatedUserInfo));
 
@@ -120,6 +139,7 @@ const ProfileSetup = ({ user, onComplete }) => {
 					return {
 						...registeredUser,
 						financialDetails: processedFinancialDetails,
+						userDetails: userDetails,
 					};
 				}
 				return registeredUser;
@@ -181,6 +201,56 @@ const ProfileSetup = ({ user, onComplete }) => {
 									value={financialDetails.accountBalance}
 									onChange={handleChange}
 									placeholder="Current Account Balance"
+									className="auth-input"
+								/>
+							</div>
+
+							<div className="input-group">
+								<FaUser className="input-icon" />
+								<input
+									type="text"
+									name="username"
+									value={userDetails.username}
+									onChange={handleUserDetailsChange}
+									placeholder="Username"
+									className="auth-input"
+								/>
+							</div>
+
+							<div className="input-group">
+								<FaEnvelope className="input-icon" />
+								<input
+									type="email"
+									name="email"
+									value={userDetails.email}
+									onChange={handleUserDetailsChange}
+									placeholder="Email Address"
+									className="auth-input"
+								/>
+							</div>
+
+							<div className="input-group">
+								<FaPhone className="input-icon" />
+								<input
+									type="tel"
+									name="phoneNumber"
+									value={userDetails.phoneNumber}
+									onChange={handleUserDetailsChange}
+									placeholder="Phone Number"
+									className="auth-input"
+								/>
+							</div>
+
+							<div className="input-group">
+								<input
+									type="file"
+									name="profilePhoto"
+									onChange={(e) =>
+										setUserDetails({
+											...userDetails,
+											profilePhoto: URL.createObjectURL(e.target.files[0]),
+										})
+									}
 									className="auth-input"
 								/>
 							</div>

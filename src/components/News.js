@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { FaNewspaper, FaExternalLinkAlt } from "react-icons/fa";
+import { FaNewspaper, FaExternalLinkAlt, FaQuoteLeft, FaQuoteRight } from "react-icons/fa";
 import "../styles/App.css";
 
 const News = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [quote, setQuote] = useState({ text: "", author: "" });
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -22,8 +23,8 @@ const News = () => {
         
         const data = await response.json();
         if (data.status === "success" && data.results && data.results.length > 0) {
-          // Limit to 8 articles to fit in sidebar
-          setNews(data.results.slice(0, 8));
+          // Limit to 5 articles to fit in sidebar
+          setNews(data.results.slice(0, 5));
         } else {
           throw new Error("No news data available");
         }
@@ -73,7 +74,67 @@ const News = () => {
       }
     };
 
+    // Fetch daily finance quote
+    const fetchQuote = () => {
+      // Array of finance-related quotes
+      const financeQuotes = [
+        {
+          text: "The stock market is a device for transferring money from the impatient to the patient.",
+          author: "Warren Buffett"
+        },
+        {
+          text: "In investing, what is comfortable is rarely profitable.",
+          author: "Robert Arnott"
+        },
+        {
+          text: "The four most dangerous words in investing are: 'this time it's different.'",
+          author: "Sir John Templeton"
+        },
+        {
+          text: "Compound interest is the eighth wonder of the world. He who understands it, earns it; he who doesn't, pays it.",
+          author: "Albert Einstein"
+        },
+        {
+          text: "It's not how much money you make, but how much money you keep, how hard it works for you, and how many generations you keep it for.",
+          author: "Robert Kiyosaki"
+        },
+        {
+          text: "An investment in knowledge pays the best interest.",
+          author: "Benjamin Franklin"
+        },
+        {
+          text: "The individual investor should act consistently as an investor and not as a speculator.",
+          author: "Ben Graham"
+        },
+        {
+          text: "The best investment you can make is in yourself.",
+          author: "Warren Buffett"
+        },
+        {
+          text: "Do not save what is left after spending, but spend what is left after saving.",
+          author: "Warren Buffett"
+        },
+        {
+          text: "Money is a terrible master but an excellent servant.",
+          author: "P.T. Barnum"
+        },
+        {
+          text: "Financial peace isn't the acquisition of stuff. It's learning to live on less than you make, so you can give money back and have money to invest.",
+          author: "Dave Ramsey"
+        },
+        {
+          text: "Never depend on a single income. Make investment to create a second source.",
+          author: "Warren Buffett"
+        }
+      ];
+
+      // Get a random quote
+      const randomIndex = Math.floor(Math.random() * financeQuotes.length);
+      setQuote(financeQuotes[randomIndex]);
+    };
+
     fetchNews();
+    fetchQuote();
   }, []);
 
   const formatDate = (dateString) => {
@@ -97,6 +158,7 @@ const News = () => {
 
   return (
     <div className="news-container">
+      {/* Financial News Section */}
       <h3 className="news-header">
         <FaNewspaper style={{ marginRight: "10px" }} /> Financial News
       </h3>
@@ -115,6 +177,21 @@ const News = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Daily Finance Quote Section */}
+      <div className="quote-container">
+        <h3 className="quote-header">
+          <FaQuoteLeft style={{ marginRight: "10px" }} /> Daily Finance Quote
+        </h3>
+        <div className="quote-content">
+          <p className="quote-text">
+            <FaQuoteLeft className="quote-icon-left" /> 
+            {quote.text} 
+            <FaQuoteRight className="quote-icon-right" />
+          </p>
+          <p className="quote-author">— {quote.author}</p>
+        </div>
       </div>
     </div>
   );

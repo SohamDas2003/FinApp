@@ -11,6 +11,9 @@ import {
 	FaLightbulb,
 	FaSignOutAlt,
 	FaMoneyBillWave,
+	FaFlag,
+	FaFileInvoiceDollar,
+	FaHandHoldingUsd
 } from "react-icons/fa";
 import {
 	Chart as ChartJS,
@@ -26,6 +29,7 @@ import {
 } from "chart.js";
 import { Line, Bar, Pie, Doughnut } from "react-chartjs-2";
 import News from "./News";
+import AppLayout from "./AppLayout";
 
 // Register ChartJS components
 ChartJS.register(
@@ -44,6 +48,15 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
 	const [activeTab, setActiveTab] = useState("overview");
 	const [activeFilter, setActiveFilter] = useState("all");
 	const [userData, setUserData] = useState(user);
+	const [features, setFeatures] = useState(() => {
+		// Load feature toggle states from localStorage if available
+		const savedFeatures = localStorage.getItem('finapp_features');
+		return savedFeatures ? JSON.parse(savedFeatures) : {
+			cashFlowForecasting: false,
+			billReminder: false,
+			debtRepayment: false
+		};
+	});
 
 	// Format numbers to Indian currency format
 	const formatCurrency = (amount) => {
@@ -335,290 +348,587 @@ const Dashboard = ({ user, onLogout, onNavigate }) => {
 		},
 	];
 
-	return (
-		<div className="app-container">
-			{/* Sidebar */}
-			<div className="sidebar">
-				<div className="profile">
-					<img
-						src={userData.profilePic}
-						alt="Profile"
-						className="profile-image"
-					/>
-					<h3 className="profile-name">{userData.name}</h3>
-					<p className="profile-subtitle">Personal Budget</p>
-				</div>
+	const calculateFinancialHealthScore = () => {
+		// Use user's financial details to calculate health score
+		// This is a simplified model - a real one would be more sophisticated
+		
+		const scores = {
+			savingsRate: 0,
+			debtToIncome: 0,
+			emergencyFund: 0,
+			investmentDiversification: 0,
+			budgetAdherence: 0
+		};
+		
+		// Calculate savings rate (percentage of income saved)
+		const monthlySavings = userData?.financialDetails?.monthlySavings || 0;
+		const savingsRate = monthlyIncome > 0 ? (monthlySavings / monthlyIncome) * 100 : 0;
+		
+		// Score the savings rate (20 points max)
+		if (savingsRate >= 20) scores.savingsRate = 20;
+		else if (savingsRate >= 15) scores.savingsRate = 16;
+		else if (savingsRate >= 10) scores.savingsRate = 12;
+		else if (savingsRate >= 5) scores.savingsRate = 8;
+		else scores.savingsRate = Math.max(4, Math.floor(savingsRate));
+		
+		// Calculate debt-to-income ratio
+		const totalDebt = userData?.financialDetails?.totalDebt || 0;
+		const debtToIncomeRatio = monthlyIncome > 0 ? (totalDebt / (monthlyIncome * 12)) * 100 : 100;
+		
+		// Score the debt-to-income ratio (20 points max)
+		if (debtToIncomeRatio <= 15) scores.debtToIncome = 20;
+		else if (debtToIncomeRatio <= 30) scores.debtToIncome = 16;
+		else if (debtToIncomeRatio <= 45) scores.debtToIncome = 12;
+		else if (debtToIncomeRatio <= 60) scores.debtToIncome = 8;
+		else scores.debtToIncome = 4;
+		
+		// Calculate emergency fund ratio (months of expenses covered)
+		const monthlyExpenses = userData?.financialDetails?.majorExpenses || 0;
+		const emergencyFund = userData?.financialDetails?.accountBalance || 0;
+		const emergencyFundRatio = monthlyExpenses > 0 ? emergencyFund / monthlyExpenses : 0;
+		
+		// Score the emergency fund (25 points max)
+		if (emergencyFundRatio >= 6) scores.emergencyFund = 25;
+		else if (emergencyFundRatio >= 3) scores.emergencyFund = 20;
+		else if (emergencyFundRatio >= 1) scores.emergencyFund = 10;
+		else scores.emergencyFund = Math.floor(emergencyFundRatio * 8);
+		
+		// Investment diversification score (15 points max)
+		// This would ideally analyze the actual investment portfolio
+		// Here we'll use a simplified approach based on number of investments
+		const investments = userData?.investmentData || [];
+		const uniqueCategories = new Set(investments.map(i => i.category)).size;
+		
+		if (uniqueCategories >= 4) scores.investmentDiversification = 15;
+		else if (uniqueCategories >= 3) scores.investmentDiversification = 12;
+		else if (uniqueCategories >= 2) scores.investmentDiversification = 9;
+		else if (uniqueCategories >= 1) scores.investmentDiversification = 6;
+		else scores.investmentDiversification = 0;
+		
+		// Budget adherence score (20 points max)
+		// Ideally this would compare actual spending to budget
+		// Here we'll just assign a reasonable default
+		scores.budgetAdherence = 15;
+		
+		// Calculate total score (out of 100)
+		const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+		
+		// Generate recommendations based on scores
+		const recommendations = [];
+		
+		if (scores.savingsRate < 12) {
+			recommendations.push("Try to increase your savings rate to at least 10% of income.");
+		}
+		
+		if (scores.debtToIncome < 16) {
+			recommendations.push("Focus on reducing high-interest debt to improve your debt-to-income ratio.");
+		}
+		
+		if (scores.emergencyFund < 20) {
+			recommendations.push("Build your emergency fund to cover at least 3-6 months of expenses.");
+		}
+		
+		if (scores.investmentDiversification < 12) {
+			recommendations.push("Diversify your investment portfolio across more asset categories.");
+		}
+		
+		return {
+			score: totalScore,
+			breakdown: scores,
+			recommendations: recommendations.slice(0, 3)  // Limit to top 3 recommendations
+		};
+	};
 
-				<ul className="nav-menu">
-					<li
-						className={`nav-item ${activeTab === "overview" ? "active" : ""}`}
-						onClick={() => setActiveTab("overview")}>
-						<FaChartLine className="nav-icon" />
-						<span className="nav-text">Dashboard</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "income" ? "active" : ""}`}
-						onClick={() => onNavigate("income")}>
-						<FaWallet className="nav-icon" />
-						<span className="nav-text">Income</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "expenses" ? "active" : ""}`}
-						onClick={() => onNavigate("expenses")}>
-						<FaExchangeAlt className="nav-icon" />
-						<span className="nav-text">Expenses</span>
-					</li>
-					<li
-						className={`nav-item ${
-							activeTab === "investments" ? "active" : ""
-						}`}
-						onClick={() => onNavigate("investments")}>
-						<FaMoneyBillWave className="nav-icon" />
-						<span className="nav-text">Investments</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "cards" ? "active" : ""}`}
-						onClick={() => onNavigate("cards")}>
-						<FaRegCreditCard className="nav-icon" />
-						<span className="nav-text">Cards & Accounts</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
-						onClick={() => onNavigate("settings")}>
-						<FaCog className="nav-icon" />
-						<span className="nav-text">Settings</span>
-					</li>
-					<li
-						className="nav-item logout-item"
-						onClick={onLogout}>
-						<FaSignOutAlt className="nav-icon" />
-						<span className="nav-text">Logout</span>
-					</li>
-				</ul>
-				
-				{/* News Section */}
-				<News />
+	// Toggle a feature on/off
+	const toggleFeature = (featureKey) => {
+		setFeatures(prev => {
+			const updatedFeatures = {
+				...prev,
+				[featureKey]: !prev[featureKey]
+			};
+			// Save to localStorage
+			localStorage.setItem('finapp_features', JSON.stringify(updatedFeatures));
+			return updatedFeatures;
+		});
+	};
+
+	return (
+		<AppLayout 
+			user={user} 
+			activeTab={activeTab} 
+			onNavigate={onNavigate} 
+			onLogout={onLogout}
+		>
+			{/* Header */}
+			<div className="header">
+				<h2 className="header-title">Financial Dashboard</h2>
+				<div className="header-right">
+					<div className="date-range">
+						<FaRegCalendarAlt style={{ marginRight: "5px" }} />
+						May 1, 2023 - Apr 30, 2024
+					</div>
+					<div className="mode-switch">ADVANCED MODE</div>
+				</div>
 			</div>
 
-			{/* Main Content */}
-			<div className="main-content">
-				<div className="finance-analytics">
-					{/* Header */}
-					<div className="header">
-						<h2 className="header-title">Financial Dashboard</h2>
-						<div className="header-right">
-							<div className="date-range">
-								<FaRegCalendarAlt style={{ marginRight: "5px" }} />
-								May 1, 2023 - Apr 30, 2024
-							</div>
-							<div className="mode-switch">ADVANCED MODE</div>
+			{/* Main Overview Section */}
+			<section className="dashboard-section">
+				<h2 className="section-title">Financial Overview</h2>
+				<div className="dashboard-grid">
+					{/* Total Balance Card */}
+					<div className="dashboard-card card-wide balance-card">
+						<h3 className="card-title">Total Balance</h3>
+						<div className="balance-amount">
+							{formatCurrency(accountBalance)}
 						</div>
-					</div>
-
-					{/* Dashboard Grid */}
-					<div className="dashboard-grid">
-						{/* Total Balance Card */}
-						<div className="dashboard-card card-wide balance-card">
-							<h3 className="card-title">Total Balance</h3>
-							<div className="balance-amount">
-								{formatCurrency(accountBalance)}
-							</div>
-							<div className="balance-details">
-								<div className="balance-item">
-									<h4 className="balance-label">Monthly Income</h4>
-									<div className="balance-value">
-										{formatCurrency(monthlyIncome)}
-										<span
-											style={{
-												color: "var(--primary-color)",
-												fontSize: "0.75rem",
-												marginLeft: "5px",
-											}}>
-											↑ 10.2%
-										</span>
-									</div>
+						<div className="balance-details">
+							<div className="balance-item">
+								<h4 className="balance-label">Monthly Income</h4>
+								<div className="balance-value">
+									{formatCurrency(monthlyIncome)}
+									<span
+										style={{
+											color: "var(--primary-color)",
+											fontSize: "0.75rem",
+											marginLeft: "5px",
+										}}>
+										↑ 10.2%
+									</span>
 								</div>
-								<div className="balance-item">
-									<h4 className="balance-label">Savings Goal</h4>
-									<div className="balance-value">
-										{formatCurrency(savingsGoal)}
-										<span
-											style={{
-												color: "var(--primary-color)",
-												fontSize: "0.75rem",
-												marginLeft: "5px",
-											}}>
+							</div>
+							<div className="balance-item">
+								<h4 className="balance-label">Savings Goal</h4>
+								<div className="balance-value">
+									{formatCurrency(savingsGoal)}
+									<span
+										style={{
+											color: "var(--primary-color)",
+											fontSize: "0.75rem",
+											marginLeft: "5px",
+										}}>
 											{savingsGoal > 0 && salaryAmount > 0
 												? Math.round((savingsGoal / salaryAmount) * 100) +
 												  "% of salary"
 												: ""}
-										</span>
-									</div>
+									</span>
 								</div>
 							</div>
 						</div>
+					</div>
 
-						{/* Profit/Loss Card */}
-						<div className="dashboard-card card-wide profit-loss-card">
-							<div className="profit-loss-title">
-								<span>Profit / Loss</span>
-							</div>
-							<div
-								className={`profit-loss-amount ${
-									currentProfit > 0 ? "profit" : "loss"
-								}`}>
-								{formatCurrency(currentProfit)}
-							</div>
-							<div
-								className={`profit-loss-percentage ${
-									currentProfit > 0 ? "profit" : "loss"
-								}`}>
-								{currentProfit > 0 ? (
-									<FaArrowUp style={{ marginRight: "5px" }} />
-								) : (
-									<FaArrowDown style={{ marginRight: "5px" }} />
-								)}
-								{Math.abs(incomePercentage)}% of income
-							</div>
+					{/* Profit/Loss Card */}
+					<div className="dashboard-card card-wide profit-loss-card">
+						<div className="profit-loss-title">
+							<span>Profit / Loss</span>
 						</div>
-
-						{/* Revenue/Expenses Card */}
-						<div className="dashboard-card card-wide revenue-expense-card">
-							<div className="card-header">
-								<div className="card-title">Revenue & Expenses</div>
-							</div>
-							<div className="card-content">
-								<div className="revenue-section">
-									<div className="revenue-title">Revenue</div>
-									<div className="revenue-amount">
-										{formatCurrency(monthlyIncome)}
-									</div>
-									<div className="percentage-change profit">
-										<FaArrowUp style={{ marginRight: "5px" }} /> 12.5%
-									</div>
-								</div>
-								<div className="expense-section">
-									<div className="expense-title">Expenses</div>
-									<div className="expense-amount">
-										{formatCurrency(majorExpenses)}
-									</div>
-									<div className="percentage-change loss">
-										<FaArrowUp style={{ marginRight: "5px" }} /> 5.3%
-									</div>
-								</div>
-								<div className="pie-chart-container">
-									<Pie
-										data={pieChartData}
-										options={{
-											...pieChartOptions,
-											maintainAspectRatio: false,
-											responsive: true,
-										}}
-									/>
-								</div>
-							</div>
+						<div
+							className={`profit-loss-amount ${
+								currentProfit > 0 ? "profit" : "loss"
+							}`}>
+							{formatCurrency(currentProfit)}
 						</div>
+						<div
+							className={`profit-loss-percentage ${
+								currentProfit > 0 ? "profit" : "loss"
+							}`}>
+							{currentProfit > 0 ? (
+								<FaArrowUp style={{ marginRight: "5px" }} />
+							) : (
+								<FaArrowDown style={{ marginRight: "5px" }} />
+							)}
+							{Math.abs(incomePercentage)}% of income
+						</div>
+					</div>
 
-						{/* Budget Allocation Card */}
-						<div className="dashboard-card card-wide budget-allocation-card">
-							<div className="profit-loss-title">
-								<span>Budget Allocation</span>
-							</div>
-							<div className="budget-chart-container">
-								<div className="doughnut-container">
-									<Doughnut
-										data={budgetAllocationData}
-										options={{
-											...doughnutOptions,
-											maintainAspectRatio: false,
-											responsive: true,
-										}}
-									/>
+					{/* Revenue/Expenses Card */}
+					<div className="dashboard-card card-wide revenue-expense-card">
+						<div className="card-header">
+							<div className="card-title">Revenue & Expenses</div>
+						</div>
+						<div className="card-content">
+							<div className="revenue-section">
+								<div className="revenue-title">Revenue</div>
+								<div className="revenue-amount">
+									{formatCurrency(monthlyIncome)}
 								</div>
-								<div className="budget-categories">
-									{budgetCategories.map((category, index) => (
-										<div
-											key={index}
-											className="budget-category-item">
-											<div
-												className="category-color"
-												style={{
-													backgroundColor:
-														budgetAllocationData.datasets[0].backgroundColor[
-															index % 7
-														],
-												}}
-											/>
-											<span className="category-name">{category.name}</span>
-											<span className="category-percentage">
-												{category.percentage}%
-											</span>
-										</div>
-									))}
+								<div className="percentage-change profit">
+									<FaArrowUp style={{ marginRight: "5px" }} /> 12.5%
 								</div>
 							</div>
-						</div>
-
-						{/* Account Activity Card */}
-						<div className="dashboard-card card-wide cash-flow-card">
-							<div className="profit-loss-title">
-								<span>Last 7 Days</span>
-								<span className="profit-loss profit">Income Sources</span>
+							<div className="expense-section">
+								<div className="expense-title">Expenses</div>
+								<div className="expense-amount">
+									{formatCurrency(majorExpenses)}
+								</div>
+								<div className="percentage-change loss">
+									<FaArrowUp style={{ marginRight: "5px" }} /> 5.3%
+								</div>
 							</div>
-							<div className="profit-loss-amount profit">
-								{formatCurrency(monthlyIncome)}
-							</div>
-							<div className="profit-loss-percentage profit">
-								<FaArrowUp style={{ marginRight: "5px" }} />{" "}
-								{formatCurrency(monthlyIncome - majorExpenses)}
-							</div>
-
-							<div className="cash-flow-title">Income Breakdown</div>
-							<table className="cash-flow-table">
-								<thead>
-									<tr>
-										<th>Amount</th>
-										<th>Source</th>
-										<th style={{ textAlign: "right" }}>Amount</th>
-									</tr>
-								</thead>
-								<tbody>
-									{cashFlowData.map((item, index) => (
-										<tr key={index}>
-											<td>{item.amount}</td>
-											<td>{item.description}</td>
-											<td style={{ textAlign: "right" }}>{item.rightAmount}</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-
-						{/* Revenue vs Expenses Chart Card */}
-						<div className="dashboard-card card-full">
-							<div
-								className="chart-title"
-								style={{
-									display: "flex",
-									alignItems: "center",
-									marginBottom: "20px",
-								}}>
-								<FaLightbulb
-									style={{ color: "#36f9ae", marginRight: "10px" }}
-								/>
-								<span>Revenue vs. Expenses by Week</span>
-							</div>
-							<div className="bar-chart-container">
-								<Bar
-									data={barChartData}
-									options={barChartOptions}
+							<div className="pie-chart-container">
+								<Pie
+									data={pieChartData}
+									options={{
+										...pieChartOptions,
+										maintainAspectRatio: false,
+										responsive: true,
+									}}
 								/>
 							</div>
 						</div>
 					</div>
+
+					{/* Account Activity Card */}
+					<div className="dashboard-card card-wide cash-flow-card">
+						<div className="profit-loss-title">
+							<span>Last 7 Days</span>
+							<span className="profit-loss profit">Income Sources</span>
+						</div>
+						<div className="profit-loss-amount profit">
+							{formatCurrency(monthlyIncome)}
+						</div>
+						<div className="profit-loss-percentage profit">
+							<FaArrowUp style={{ marginRight: "5px" }} />{" "}
+							{formatCurrency(monthlyIncome - majorExpenses)}
+						</div>
+
+						<div className="cash-flow-title">Income Breakdown</div>
+						<table className="cash-flow-table">
+							<thead>
+								<tr>
+									<th>Amount</th>
+									<th>Source</th>
+									<th style={{ textAlign: "right" }}>Amount</th>
+								</tr>
+							</thead>
+							<tbody>
+								{cashFlowData.map((item, index) => (
+									<tr key={index}>
+										<td>{item.amount}</td>
+										<td>{item.description}</td>
+										<td style={{ textAlign: "right" }}>{item.rightAmount}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
 				</div>
-			</div>
-		</div>
+			</section>
+
+			{/* Budget Section */}
+			<section className="dashboard-section">
+				<h2 className="section-title">Budget Management</h2>
+				<div className="dashboard-grid">
+					{/* Budget Allocation Card */}
+					<div className="dashboard-card card-wide budget-allocation-card">
+						<div className="profit-loss-title">
+							<span>Budget Allocation</span>
+						</div>
+						<div className="budget-chart-container">
+							<div className="doughnut-container">
+								<Doughnut
+									data={budgetAllocationData}
+									options={{
+										...doughnutOptions,
+										maintainAspectRatio: false,
+										responsive: true,
+									}}
+								/>
+							</div>
+							<div className="budget-categories">
+								{budgetCategories.map((category, index) => (
+									<div
+										key={index}
+										className="budget-category-item">
+										<div
+											className="category-color"
+											style={{
+												backgroundColor:
+													budgetAllocationData.datasets[0].backgroundColor[
+														index % 7
+													],
+											}}
+										/>
+										<span className="category-name">{category.name}</span>
+										<span className="category-percentage">
+											{category.percentage}%
+										</span>
+									</div>
+								))}
+							</div>
+						</div>
+					</div>
+
+					{/* Revenue vs Expenses Chart Card */}
+					<div className="dashboard-card card-wide">
+						<div
+							className="chart-title"
+							style={{
+								display: "flex",
+								alignItems: "center",
+								marginBottom: "20px",
+							}}>
+							<FaLightbulb
+								style={{ color: "#36f9ae", marginRight: "10px" }}
+							/>
+							<span>Revenue vs. Expenses by Week</span>
+						</div>
+						<div className="bar-chart-container">
+							<Bar
+								data={barChartData}
+								options={barChartOptions}
+							/>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Financial Health Section */}
+			<section className="dashboard-section">
+				<h2 className="section-title">Financial Health</h2>
+				<div className="dashboard-grid">
+					{(() => {
+						const healthData = calculateFinancialHealthScore();
+						const { score, breakdown, recommendations } = healthData;
+						
+						// Determine score color and category
+						let scoreColor, scoreCategory;
+						if (score >= 80) {
+							scoreColor = "#36f9ae";
+							scoreCategory = "Excellent";
+						} else if (score >= 70) {
+							scoreColor = "#66bb6a";
+							scoreCategory = "Good";
+						} else if (score >= 60) {
+							scoreColor = "#ffb74d";
+							scoreCategory = "Fair";
+						} else {
+							scoreColor = "#ff5252";
+							scoreCategory = "Needs Improvement";
+						}
+						
+						return (
+							<>
+								<div className="dashboard-card card-wide health-score-card">
+									<div className="health-score-circle" style={{ borderColor: scoreColor }}>
+										<div className="health-score">{score}</div>
+										<div className="health-category">{scoreCategory}</div>
+									</div>
+									
+									<div className="health-breakdown">
+										<div className="breakdown-item">
+											<span>Savings Rate</span>
+											<div className="breakdown-bar">
+												<div 
+													className="breakdown-fill" 
+													style={{ 
+														width: `${(breakdown.savingsRate / 20) * 100}%`,
+														backgroundColor: breakdown.savingsRate >= 16 ? "#36f9ae" : 
+															breakdown.savingsRate >= 12 ? "#66bb6a" : 
+															breakdown.savingsRate >= 8 ? "#ffb74d" : "#ff5252"
+													}}
+												></div>
+											</div>
+											<span>{breakdown.savingsRate}/20</span>
+										</div>
+										
+										<div className="breakdown-item">
+											<span>Debt Management</span>
+											<div className="breakdown-bar">
+												<div 
+													className="breakdown-fill" 
+													style={{ 
+														width: `${(breakdown.debtToIncome / 20) * 100}%`,
+														backgroundColor: breakdown.debtToIncome >= 16 ? "#36f9ae" : 
+															breakdown.debtToIncome >= 12 ? "#66bb6a" : 
+															breakdown.debtToIncome >= 8 ? "#ffb74d" : "#ff5252"
+													}}
+												></div>
+											</div>
+											<span>{breakdown.debtToIncome}/20</span>
+										</div>
+										
+										<div className="breakdown-item">
+											<span>Emergency Fund</span>
+											<div className="breakdown-bar">
+												<div 
+													className="breakdown-fill" 
+													style={{ 
+														width: `${(breakdown.emergencyFund / 25) * 100}%`,
+														backgroundColor: breakdown.emergencyFund >= 20 ? "#36f9ae" : 
+															breakdown.emergencyFund >= 15 ? "#66bb6a" : 
+															breakdown.emergencyFund >= 10 ? "#ffb74d" : "#ff5252"
+													}}
+												></div>
+											</div>
+											<span>{breakdown.emergencyFund}/25</span>
+										</div>
+										
+										<div className="breakdown-item">
+											<span>Investment Diversity</span>
+											<div className="breakdown-bar">
+												<div 
+													className="breakdown-fill" 
+													style={{ 
+														width: `${(breakdown.investmentDiversification / 15) * 100}%`,
+														backgroundColor: breakdown.investmentDiversification >= 12 ? "#36f9ae" : 
+															breakdown.investmentDiversification >= 9 ? "#66bb6a" : 
+															breakdown.investmentDiversification >= 6 ? "#ffb74d" : "#ff5252"
+													}}
+												></div>
+											</div>
+											<span>{breakdown.investmentDiversification}/15</span>
+										</div>
+										
+										<div className="breakdown-item">
+											<span>Budget Management</span>
+											<div className="breakdown-bar">
+												<div 
+													className="breakdown-fill" 
+													style={{ 
+														width: `${(breakdown.budgetAdherence / 20) * 100}%`,
+														backgroundColor: breakdown.budgetAdherence >= 16 ? "#36f9ae" : 
+															breakdown.budgetAdherence >= 12 ? "#66bb6a" : 
+															breakdown.budgetAdherence >= 8 ? "#ffb74d" : "#ff5252"
+													}}
+												></div>
+											</div>
+											<span>{breakdown.budgetAdherence}/20</span>
+										</div>
+									</div>
+								</div>
+								
+								<div className="dashboard-card card-wide recommendations-card">
+									<h3>Recommendations to Improve Your Score</h3>
+									
+									{recommendations.length > 0 ? (
+										<ul className="recommendations-list">
+											{recommendations.map((rec, index) => (
+												<li key={index} className="recommendation-item">
+													<FaLightbulb className="recommendation-icon" />
+													<span>{rec}</span>
+												</li>
+											))}
+										</ul>
+									) : (
+										<p className="no-recommendations">
+											Great job! Your financial health is looking good. Keep up the good work!
+										</p>
+									)}
+								</div>
+							</>
+						);
+					})()}
+				</div>
+			</section>
+
+			{/* Feature Toggles Section */}
+			<section className="dashboard-section">
+				<div className="feature-toggles-header">
+					<div>
+						<h2 className="feature-toggles-title">Financial Tools</h2>
+						<p className="feature-toggles-subtitle">Activate the specialized tools you need to enhance your financial planning</p>
+					</div>
+				</div>
+
+				<div className="feature-toggles-grid">
+					{/* Cash Flow Forecasting */}
+					<div className="feature-card" onClick={() => toggleFeature('cashFlowForecasting')}>
+						<div className="feature-card-header">
+							<div className="feature-icon">
+								<FaChartLine />
+							</div>
+							<h3 className="feature-title">Cash Flow Forecasting</h3>
+						</div>
+						<p className="feature-description">Predict your future cash flow based on income, expenses, and historical data</p>
+						
+						<div className="feature-graph">
+							<div className="graph-placeholder"></div>
+						</div>
+						
+						<div className="toggle-switch-container">
+							<span className={`toggle-status ${features.cashFlowForecasting ? 'active' : ''}`}>
+								{features.cashFlowForecasting ? 'Active' : 'Inactive'}
+							</span>
+							<label className="toggle-switch">
+								<input 
+									type="checkbox" 
+									checked={features.cashFlowForecasting}
+									onChange={(e) => {
+										e.stopPropagation();
+										toggleFeature('cashFlowForecasting');
+									}}
+								/>
+								<span className="toggle-slider"></span>
+							</label>
+						</div>
+					</div>
+
+					{/* Bill Reminder */}
+					<div className="feature-card" onClick={() => toggleFeature('billReminder')}>
+						<div className="feature-card-header">
+							<div className="feature-icon">
+								<FaFileInvoiceDollar />
+							</div>
+							<h3 className="feature-title">Bill Reminder</h3>
+						</div>
+						<p className="feature-description">Get notifications for upcoming bills and track payment history</p>
+						
+						<div className="feature-graph">
+							<div className="graph-placeholder"></div>
+						</div>
+						
+						<div className="toggle-switch-container">
+							<span className={`toggle-status ${features.billReminder ? 'active' : ''}`}>
+								{features.billReminder ? 'Active' : 'Inactive'}
+							</span>
+							<label className="toggle-switch">
+								<input 
+									type="checkbox" 
+									checked={features.billReminder}
+									onChange={(e) => {
+										e.stopPropagation();
+										toggleFeature('billReminder');
+									}}
+								/>
+								<span className="toggle-slider"></span>
+							</label>
+						</div>
+					</div>
+
+					{/* Debt Repayment */}
+					<div className="feature-card" onClick={() => toggleFeature('debtRepayment')}>
+						<div className="feature-card-header">
+							<div className="feature-icon">
+								<FaHandHoldingUsd />
+							</div>
+							<h3 className="feature-title">Debt Repayment</h3>
+						</div>
+						<p className="feature-description">Compare debt payment strategies and create a customized repayment plan</p>
+						
+						<div className="feature-graph">
+							<div className="graph-placeholder"></div>
+						</div>
+						
+						<div className="toggle-switch-container">
+							<span className={`toggle-status ${features.debtRepayment ? 'active' : ''}`}>
+								{features.debtRepayment ? 'Active' : 'Inactive'}
+							</span>
+							<label className="toggle-switch">
+								<input 
+									type="checkbox" 
+									checked={features.debtRepayment}
+									onChange={(e) => {
+										e.stopPropagation();
+										toggleFeature('debtRepayment');
+									}}
+								/>
+								<span className="toggle-slider"></span>
+							</label>
+						</div>
+					</div>
+				</div>
+			</section>
+		</AppLayout>
 	);
 };
 
