@@ -9,7 +9,6 @@ import {
 	FaArrowUp,
 	FaArrowDown,
 	FaLightbulb,
-	FaSignOutAlt,
 } from "react-icons/fa";
 import {
 	Chart as ChartJS,
@@ -31,6 +30,8 @@ import Dashboard from "./components/Dashboard";
 import Income from "./components/Income";
 import Expenses from "./components/Expenses";
 import Investments from "./components/Investments";
+import Goals from "./components/Goals";
+import Settings from "./components/Settings";
 import ProfileSetup from "./components/ProfileSetup";
 import Cards from "./components/Cards";
 import Account from "./components/Account";
@@ -289,14 +290,13 @@ function App() {
 				pageContent = <Expenses user={currentUser} />;
 				break;
 			case "investments":
-				pageContent = <Investments user={currentUser} />;
-				break;
-			case "cards":
-				pageContent = <Cards user={currentUser} />;
-				break;
-			case "account":
-				pageContent = <Account user={currentUser} />;
-				break;
+				return (
+					<Investments
+						user={currentUser}
+						onLogout={handleLogout}
+						onNavigate={handleNavigate}
+					/>
+				);
 			case "dashboard":
 			default:
 				pageContent = <Dashboard user={currentUser} />;

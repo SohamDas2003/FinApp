@@ -3,11 +3,12 @@ import {
 	FaPlus,
 	FaArrowUp,
 	FaArrowDown,
-	FaChartPie,
-	FaRegCalendarAlt,
+	FaMoneyBillWave,
+	FaPercentage,
 } from "react-icons/fa";
 import { Pie, Line } from "react-chartjs-2";
 import "../styles/App.css";
+import News from "./News";
 
 const Investments = ({ user }) => {
 	const [activeTab, setActiveTab] = useState("investments");
@@ -274,439 +275,516 @@ const Investments = ({ user }) => {
 	const { totalInvestment, totalReturns } = calculateTotals();
 
 	return (
-		<>
-			{/* Header */}
-			<div className="header">
-				<h1>Investment Portfolio</h1>
-				<div className="user-info">
-					<h3>{user.name}</h3>
+		<div className="app-container">
+			{/* Sidebar */}
+			<div className="sidebar">
+				<div className="profile">
 					<img
 						src={user.profilePic}
 						alt="Profile"
-						className="profile-image-small"
+						className="profile-image"
 					/>
+					<h3 className="profile-name">{user.name}</h3>
+					<p className="profile-subtitle">Personal Budget</p>
 				</div>
+
+				<ul className="nav-menu">
+					<li
+						className={`nav-item ${activeTab === "overview" ? "active" : ""}`}
+						onClick={() => onNavigate("dashboard")}>
+						<FaChartLine className="nav-icon" />
+						<span className="nav-text">Dashboard</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "income" ? "active" : ""}`}
+						onClick={() => onNavigate("income")}>
+						<FaWallet className="nav-icon" />
+						<span className="nav-text">Income</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "expenses" ? "active" : ""}`}
+						onClick={() => onNavigate("expenses")}>
+						<FaExchangeAlt className="nav-icon" />
+						<span className="nav-text">Expenses</span>
+					</li>
+					<li
+						className={`nav-item ${
+							activeTab === "investments" ? "active" : ""
+						}`}
+						onClick={() => setActiveTab("investments")}>
+						<FaMoneyBillWave className="nav-icon" />
+						<span className="nav-text">Investments</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "cards" ? "active" : ""}`}
+						onClick={() => onNavigate("cards")}>
+						<FaRegCreditCard className="nav-icon" />
+						<span className="nav-text">Cards & Accounts</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+						onClick={() => onNavigate("settings")}>
+						<FaCog className="nav-icon" />
+						<span className="nav-text">Settings</span>
+					</li>
+					<li
+						className="nav-item logout-item"
+						onClick={onLogout}>
+						<FaSignOutAlt className="nav-icon" />
+						<span className="nav-text">Logout</span>
+					</li>
+				</ul>
+
+				{/* News Section */}
+				<News />
 			</div>
 
-			{/* Tab Menu */}
-			<div className="tab-menu">
-				<div
-					className={`tab ${activeTab === "investments" ? "active" : ""}`}
-					onClick={() => setActiveTab("investments")}
-				>
-					All Investments
-				</div>
-				<div
-					className={`tab ${activeTab === "portfolio" ? "active" : ""}`}
-					onClick={() => setActiveTab("portfolio")}
-				>
-					Portfolio
-				</div>
-				<div
-					className={`tab ${activeTab === "performance" ? "active" : ""}`}
-					onClick={() => setActiveTab("performance")}
-				>
-					Performance
-				</div>
-				<div className="tab-spacer"></div>
-				<button
-					className="add-button"
-					onClick={() => setShowAddForm(!showAddForm)}
-					style={{
-						background: "#4CAF50",
-						border: "none",
-						borderRadius: "5px",
-						padding: "8px 15px",
-						color: "white",
-						display: "flex",
-						alignItems: "center",
-						cursor: "pointer",
-						fontWeight: "bold",
-					}}>
-					<FaPlus style={{ marginRight: "5px" }} />
-					Add Investment
-				</button>
-			</div>
+			{/* Main Content */}
+			<div className="main-content">
+				<div className="finance-analytics">
+					{/* Header */}
+					<div className="header">
+						<h2 className="header-title">Investment Portfolio</h2>
+						<div className="header-right">
+							<button
+								className="add-button"
+								onClick={() => setShowAddForm(!showAddForm)}
+								style={{
+									background: "var(--primary-color)",
+									border: "none",
+									borderRadius: "5px",
+									padding: "8px 15px",
+									color: "#000",
+									display: "flex",
+									alignItems: "center",
+									cursor: "pointer",
+									fontWeight: "bold",
+								}}>
+								<FaPlus style={{ marginRight: "5px" }} />
+								Add Investment
+							</button>
+						</div>
+					</div>
 
-			{/* Finance Analytics */}
-			<div className="finance-analytics">
-				{/* Add Investment Form */}
-				{showAddForm && (
-					<div className="dashboard-card card-full" style={{ marginBottom: "20px" }}>
-						<h3 className="card-title">Add New Investment</h3>
-						<form onSubmit={handleAddInvestment}>
+					{/* Dashboard Grid */}
+					<div className="dashboard-grid">
+						{/* Add Investment Form */}
+						{showAddForm && (
+							<div
+								className="dashboard-card card-full"
+								style={{ padding: "20px" }}>
+								<h3 className="card-title">Add New Investment</h3>
+								<form
+									onSubmit={handleAddInvestment}
+									className="investment-form">
+									<div
+										className="form-row"
+										style={{
+											display: "flex",
+											gap: "15px",
+											marginBottom: "15px",
+										}}>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Investment Name</label>
+											<input
+												type="text"
+												name="name"
+												value={newInvestment.name}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Stock name, fund name, etc."
+											/>
+										</div>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Category</label>
+											<select
+												name="category"
+												value={newInvestment.category}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}>
+												<option value="">Select Category</option>
+												{investmentCategories.map((cat, index) => (
+													<option
+														key={index}
+														value={cat.name}>
+														{cat.name}
+													</option>
+												))}
+											</select>
+										</div>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Purchase Date</label>
+											<input
+												type="date"
+												name="date"
+												value={newInvestment.date}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+											/>
+										</div>
+									</div>
+									<div
+										className="form-row"
+										style={{
+											display: "flex",
+											gap: "15px",
+											marginBottom: "20px",
+										}}>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Initial Investment</label>
+											<input
+												type="number"
+												name="initialAmount"
+												value={newInvestment.initialAmount}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Amount invested"
+											/>
+										</div>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Current Value (Optional)</label>
+											<input
+												type="number"
+												name="currentAmount"
+												value={newInvestment.currentAmount}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Current value"
+											/>
+										</div>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Returns % (Optional)</label>
+											<input
+												type="number"
+												name="returns"
+												value={newInvestment.returns}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Return percentage"
+											/>
+										</div>
+									</div>
+									<div
+										className="form-buttons"
+										style={{
+											display: "flex",
+											justifyContent: "flex-end",
+											gap: "10px",
+										}}>
+										<button
+											type="button"
+											onClick={() => setShowAddForm(false)}
+											style={{
+												padding: "10px 20px",
+												backgroundColor: "#3d3d3d",
+												border: "none",
+												borderRadius: "5px",
+												color: "var(--text-light)",
+												cursor: "pointer",
+											}}>
+											Cancel
+										</button>
+										<button
+											type="submit"
+											style={{
+												padding: "10px 20px",
+												backgroundColor: "var(--primary-color)",
+												border: "none",
+												borderRadius: "5px",
+												color: "#000",
+												cursor: "pointer",
+												fontWeight: "bold",
+											}}>
+											Save Investment
+										</button>
+									</div>
+								</form>
+							</div>
+						)}
+
+						{/* Portfolio Overview Cards */}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Total Investment</h3>
+							<div className="balance-amount">
+								{formatCurrency(stats.totalInvested)}
+							</div>
+							<div className="balance-label">Initial investment amount</div>
+						</div>
+
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Current Value</h3>
+							<div className="balance-amount profit">
+								{formatCurrency(stats.currentValue)}
+							</div>
+							<div className="balance-label">Current portfolio value</div>
+						</div>
+
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Total Returns</h3>
+							<div
+								className="balance-amount"
+								style={{
+									color:
+										stats.totalReturns >= 0
+											? "var(--primary-color)"
+											: "#ff5252",
+								}}>
+								{formatCurrency(stats.totalReturns)}
+								<span style={{ fontSize: "1rem", marginLeft: "5px" }}>
+									({stats.totalGrowth.toFixed(2)}%)
+								</span>
+							</div>
+							<div className="balance-label">Overall portfolio performance</div>
+						</div>
+
+						{/* Portfolio Allocation Chart */}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Portfolio Allocation</h3>
 							<div
 								style={{
-									display: "grid",
-									gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
-									gap: "15px",
+									height: "300px",
+									position: "relative",
+									display: "flex",
+									justifyContent: "center",
 								}}>
-								<div>
-									<label
-										htmlFor="name"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Investment Name
-									</label>
-									<input
-										type="text"
-										id="name"
-										name="name"
-										value={newInvestment.name}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="type"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Type
-									</label>
-									<select
-										id="type"
-										name="type"
-										value={newInvestment.type}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}>
-										<option value="">Select Type</option>
-										<option value="Stocks">Stocks</option>
-										<option value="Mutual Funds">Mutual Funds</option>
-										<option value="Fixed Deposits">Fixed Deposits</option>
-										<option value="Gold">Gold</option>
-										<option value="Real Estate">Real Estate</option>
-										<option value="Cryptocurrency">Cryptocurrency</option>
-										<option value="Bonds">Bonds</option>
-										<option value="Other">Other</option>
-									</select>
-								</div>
-								<div>
-									<label
-										htmlFor="amount"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Amount
-									</label>
-									<input
-										type="number"
-										id="amount"
-										name="amount"
-										value={newInvestment.amount}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="date"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Date
-									</label>
-									<input
-										type="date"
-										id="date"
-										name="date"
-										value={newInvestment.date}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="description"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Description
-									</label>
-									<input
-										type="text"
-										id="description"
-										name="description"
-										value={newInvestment.description}
-										onChange={handleInputChange}
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
+								<Doughnut
+									data={prepareAllocationData()}
+									options={doughnutOptions}
+								/>
 							</div>
-							<div style={{ marginTop: "15px", textAlign: "right" }}>
-								<button
-									type="submit"
-									style={{
-										backgroundColor: "#4CAF50",
-										color: "white",
-										border: "none",
-										borderRadius: "4px",
-										padding: "8px 15px",
-										cursor: "pointer",
-										fontWeight: "bold",
-									}}>
-									Add Investment
-								</button>
-							</div>
-						</form>
-					</div>
-				)}
-
-				{/* Dashboard Grid */}
-				<div className="dashboard-grid">
-					<div className="dashboard-card card-wide">
-						<h3 className="card-title">Total Investments</h3>
-						<div className="balance-amount" style={{ color: "#2196F3" }}>
-							{formatCurrency(totalInvestment)}
 						</div>
-						<div className="balance-label">Total invested amount</div>
-					</div>
 
-					<div className="dashboard-card card-wide">
-						<h3 className="card-title">Returns</h3>
-						<div className="balance-amount" style={{ color: totalReturns >= 0 ? "#4CAF50" : "#FF5252" }}>
-							{formatCurrency(totalReturns)}
+						{/* Best and Worst Performers */}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Best Performer</h3>
+							{stats.bestPerformer ? (
+								<>
+									<div
+										className="balance-amount profit"
+										style={{ fontSize: "1.5rem" }}>
+										{stats.bestPerformer.name}
+									</div>
+									<div
+										className="balance-amount profit"
+										style={{ fontSize: "1.2rem" }}>
+										{stats.bestPerformer.returns.toFixed(2)}%
+									</div>
+									<div className="balance-label">
+										{stats.bestPerformer.category} • Initial:{" "}
+										{formatCurrency(stats.bestPerformer.initialAmount)}
+									</div>
+								</>
+							) : (
+								<div className="balance-label">No investments yet</div>
+							)}
 						</div>
-						<div className="balance-label">
-							<span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-								{totalReturns >= 0 ? (
-									<>
-										<FaArrowUp style={{ color: "#4CAF50", marginRight: "5px" }} />
-										{((totalReturns / totalInvestment) * 100).toFixed(2)}% growth
-									</>
-								) : (
-									<>
-										<FaArrowDown style={{ color: "#FF5252", marginRight: "5px" }} />
-										{Math.abs((totalReturns / totalInvestment) * 100).toFixed(2)}% loss
-									</>
-								)}
-							</span>
-						</div>
-					</div>
 
-					<div className="dashboard-card card-wide">
-						<h3 className="card-title">Portfolio Value</h3>
-						<div className="balance-amount" style={{ color: "#673AB7" }}>
-							{formatCurrency(totalInvestment + totalReturns)}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Worst Performer</h3>
+							{stats.worstPerformer ? (
+								<>
+									<div
+										className="balance-amount"
+										style={{ fontSize: "1.5rem", color: "#ff5252" }}>
+										{stats.worstPerformer.name}
+									</div>
+									<div
+										className="balance-amount"
+										style={{ fontSize: "1.2rem", color: "#ff5252" }}>
+										{stats.worstPerformer.returns.toFixed(2)}%
+									</div>
+									<div className="balance-label">
+										{stats.worstPerformer.category} • Initial:{" "}
+										{formatCurrency(stats.worstPerformer.initialAmount)}
+									</div>
+								</>
+							) : (
+								<div className="balance-label">No investments yet</div>
+							)}
 						</div>
-						<div className="balance-label">Current total value</div>
-					</div>
 
-					{/* Investment Charts */}
-					<div className="dashboard-card card-full">
-						<h3 className="card-title">Portfolio Performance</h3>
-						<div style={{ height: "300px", position: "relative" }}>
-							<Line data={prepareReturnsChartData()} options={lineChartOptions} />
-						</div>
-					</div>
-
-					<div className="dashboard-card card-full">
-						<h3 className="card-title">Asset Allocation</h3>
-						<div style={{ height: "300px", position: "relative" }}>
-							<Pie data={preparePieChartData()} options={pieChartOptions} />
-						</div>
-					</div>
-
-					{/* Investment List */}
-					<div className="dashboard-card card-full">
-						<h3 className="card-title">Investment History</h3>
-						<div className="investment-list">
-							<table style={{ width: "100%", borderCollapse: "collapse" }}>
-								<thead>
-									<tr>
-										<th
-											style={{
-												textAlign: "left",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Date
-										</th>
-										<th
-											style={{
-												textAlign: "left",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Name
-										</th>
-										<th
-											style={{
-												textAlign: "left",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Type
-										</th>
-										<th
-											style={{
-												textAlign: "right",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Amount
-										</th>
-										<th
-											style={{
-												textAlign: "right",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Returns
-										</th>
-										<th
-											style={{
-												textAlign: "center",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Action
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-									{investmentData.length > 0 ? (
-										investmentData
-											.sort((a, b) => new Date(b.date) - new Date(a.date))
-											.map((investment) => (
-												<tr key={investment.id}>
-													<td
-														style={{
-															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-														}}>
-														{new Date(investment.date).toLocaleDateString()}
-													</td>
-													<td
-														style={{
-															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-														}}>
-														{investment.name}
-													</td>
-													<td
-														style={{
-															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-														}}>
-														{investment.type}
-													</td>
-													<td
-														style={{
-															textAlign: "right",
-															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-															color: "#2196F3",
-															fontWeight: "bold",
-														}}>
-														{formatCurrency(investment.amount)}
-													</td>
-													<td
-														style={{
-															textAlign: "right",
-															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-															color:
-																investment.returns >= 0
-																	? "#4CAF50"
-																	: "#FF5252",
-															fontWeight: "bold",
-														}}>
-														<div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-															{investment.returns >= 0 ? (
-																<FaArrowUp style={{ marginRight: "5px" }} />
-															) : (
-																<FaArrowDown style={{ marginRight: "5px" }} />
-															)}
-															{formatCurrency(investment.returns)}
-														</div>
-													</td>
-													<td
-														style={{
-															textAlign: "center",
-															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-														}}>
-														<div
-															style={{
-																display: "flex",
-																alignItems: "center",
-																justifyContent: "center",
-															}}>
-															<button
-																onClick={() =>
-																	handleDeleteInvestment(investment.id)
-																}
-																style={{
-																	background: "none",
-																	border: "none",
-																	color: "#ff5252",
-																	cursor: "pointer",
-																	fontSize: "14px",
-																}}>
-																Delete
-															</button>
-														</div>
-													</td>
-												</tr>
-											))
-									) : (
+						{/* Investment List */}
+						<div className="dashboard-card card-full">
+							<h3 className="card-title">Investment Portfolio</h3>
+							<div className="investment-list">
+								<table style={{ width: "100%", borderCollapse: "collapse" }}>
+									<thead>
 										<tr>
-											<td
-												colSpan="6"
+											<th
 												style={{
-													textAlign: "center",
-													padding: "20px",
-													color: "var(--text-secondary)",
+													textAlign: "left",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
 												}}>
-												No investment records found. Add your first investment!
-											</td>
+												Name
+											</th>
+											<th
+												style={{
+													textAlign: "left",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Category
+											</th>
+											<th
+												style={{
+													textAlign: "right",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Initial Investment
+											</th>
+											<th
+												style={{
+													textAlign: "right",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Current Value
+											</th>
+											<th
+												style={{
+													textAlign: "right",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Returns
+											</th>
+											<th
+												style={{
+													textAlign: "left",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Purchase Date
+											</th>
 										</tr>
-									)}
-								</tbody>
-							</table>
+									</thead>
+									<tbody>
+										{investmentData.map((investment, index) => (
+											<tr key={index}>
+												<td
+													style={{
+														padding: "10px",
+														borderBottom: "1px solid var(--border-color)",
+													}}>
+													{investment.name}
+												</td>
+												<td
+													style={{
+														padding: "10px",
+														borderBottom: "1px solid var(--border-color)",
+													}}>
+													{investment.category}
+												</td>
+												<td
+													style={{
+														textAlign: "right",
+														padding: "10px",
+														borderBottom: "1px solid var(--border-color)",
+													}}>
+													{formatCurrency(investment.initialAmount)}
+												</td>
+												<td
+													style={{
+														textAlign: "right",
+														padding: "10px",
+														borderBottom: "1px solid var(--border-color)",
+													}}>
+													{formatCurrency(investment.currentAmount)}
+												</td>
+												<td
+													style={{
+														textAlign: "right",
+														padding: "10px",
+														borderBottom: "1px solid var(--border-color)",
+														color:
+															parseFloat(investment.returns) >= 0
+																? "var(--primary-color)"
+																: "#ff5252",
+													}}>
+													{parseFloat(investment.returns).toFixed(2)}%
+												</td>
+												<td
+													style={{
+														padding: "10px",
+														borderBottom: "1px solid var(--border-color)",
+													}}>
+													{new Date(investment.date).toLocaleDateString()}
+												</td>
+											</tr>
+										))}
+										{investmentData.length === 0 && (
+											<tr>
+												<td
+													colSpan="6"
+													style={{ textAlign: "center", padding: "20px" }}>
+													No investments added yet
+												</td>
+											</tr>
+										)}
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 };
 

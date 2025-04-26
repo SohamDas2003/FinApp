@@ -3,10 +3,11 @@ import {
 	FaRegCalendarAlt,
 	FaPlus,
 	FaArrowDown,
-	FaFilter,
+	FaMoneyBillWave,
 } from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
 import "../styles/App.css";
+import AppLayout from "./AppLayout";
 
 const Expenses = ({ user }) => {
 	const [activeTab, setActiveTab] = useState("expenses");
@@ -241,362 +242,383 @@ const Expenses = ({ user }) => {
 	};
 
 	return (
-		<>
-			{/* Header */}
-			<div className="header">
-				<h1>Expense Management</h1>
-				<div className="user-info">
-					<h3>{user.name}</h3>
+		<div className="app-container">
+			{/* Sidebar */}
+			<div className="sidebar">
+				<div className="profile">
 					<img
 						src={user.profilePic}
 						alt="Profile"
-						className="profile-image-small"
+						className="profile-image"
 					/>
+					<h3 className="profile-name">{user.name}</h3>
+					<p className="profile-subtitle">Personal Budget</p>
 				</div>
+
+				<ul className="nav-menu">
+					<li
+						className={`nav-item ${activeTab === "overview" ? "active" : ""}`}
+						onClick={() => onNavigate("dashboard")}>
+						<FaChartLine className="nav-icon" />
+						<span className="nav-text">Dashboard</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "income" ? "active" : ""}`}
+						onClick={() => onNavigate("income")}>
+						<FaWallet className="nav-icon" />
+						<span className="nav-text">Income</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "expenses" ? "active" : ""}`}
+						onClick={() => setActiveTab("expenses")}>
+						<FaExchangeAlt className="nav-icon" />
+						<span className="nav-text">Expenses</span>
+					</li>
+					<li
+						className={`nav-item ${
+							activeTab === "investments" ? "active" : ""
+						}`}
+						onClick={() => onNavigate("investments")}>
+						<FaMoneyBillWave className="nav-icon" />
+						<span className="nav-text">Investments</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "cards" ? "active" : ""}`}
+						onClick={() => onNavigate("cards")}>
+						<FaRegCreditCard className="nav-icon" />
+						<span className="nav-text">Cards & Accounts</span>
+					</li>
+					<li
+						className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
+						onClick={() => onNavigate("settings")}>
+						<FaCog className="nav-icon" />
+						<span className="nav-text">Settings</span>
+					</li>
+					<li
+						className="nav-item logout-item"
+						onClick={onLogout}>
+						<FaSignOutAlt className="nav-icon" />
+						<span className="nav-text">Logout</span>
+					</li>
+				</ul>
+
+				<News />
 			</div>
 
-			{/* Tab Menu */}
-			<div className="tab-menu">
-				<div
-					className={`tab ${activeTab === "expenses" ? "active" : ""}`}
-					onClick={() => setActiveTab("expenses")}
-				>
-					All Expenses
-				</div>
-				<div
-					className={`tab ${activeTab === "categories" ? "active" : ""}`}
-					onClick={() => setActiveTab("categories")}
-				>
-					By Category
-				</div>
-				<div
-					className={`tab ${activeTab === "analysis" ? "active" : ""}`}
-					onClick={() => setActiveTab("analysis")}
-				>
-					Analysis
-				</div>
-				<div className="tab-spacer"></div>
-				<button
-					className="add-button"
-					onClick={() => setShowAddForm(!showAddForm)}
-					style={{
-						background: "#ff6384",
-						border: "none",
-						borderRadius: "5px",
-						padding: "8px 15px",
-						color: "white",
-						display: "flex",
-						alignItems: "center",
-						cursor: "pointer",
-						fontWeight: "bold",
-					}}>
-					<FaPlus style={{ marginRight: "5px" }} />
-					Add Expense
-				</button>
-			</div>
+			{/* Main Content */}
+			<div className="main-content">
+				<div className="finance-analytics">
+					{/* Header */}
+					<div className="header">
+						<h2 className="header-title">Expense Tracker</h2>
+						<div className="header-right">
+							<div className="date-range">
+								<FaRegCalendarAlt style={{ marginRight: "5px" }} />
+								Last 6 Months
+							</div>
+							<button
+								className="add-button"
+								onClick={() => setShowAddForm(!showAddForm)}
+								style={{
+									background: "var(--primary-color)",
+									border: "none",
+									borderRadius: "5px",
+									padding: "8px 15px",
+									color: "#000",
+									display: "flex",
+									alignItems: "center",
+									cursor: "pointer",
+									fontWeight: "bold",
+								}}>
+								<FaPlus style={{ marginRight: "5px" }} />
+								Add Expense
+							</button>
+						</div>
+					</div>
 
-			{/* Finance Analytics */}
-			<div className="finance-analytics">
-				{/* Add Expense Form */}
-				{showAddForm && (
-					<div className="dashboard-card card-full" style={{ marginBottom: "20px" }}>
-						<h3 className="card-title">Add New Expense</h3>
-						<form onSubmit={handleAddExpense}>
+					{/* Dashboard Grid */}
+					<div className="dashboard-grid">
+						{/* Add Expense Form */}
+						{showAddForm && (
+							<div
+								className="dashboard-card card-full"
+								style={{ padding: "20px" }}>
+								<h3 className="card-title">Add New Expense</h3>
+								<form
+									onSubmit={handleAddExpense}
+									className="expense-form">
+									<div
+										className="form-row"
+										style={{
+											display: "flex",
+											gap: "15px",
+											marginBottom: "15px",
+										}}>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Category</label>
+											<input
+												type="text"
+												name="category"
+												value={newExpense.category}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Housing, Food, Transport, etc."
+											/>
+										</div>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Amount</label>
+											<input
+												type="number"
+												name="amount"
+												value={newExpense.amount}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Expense amount"
+											/>
+										</div>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Date</label>
+											<input
+												type="date"
+												name="date"
+												value={newExpense.date}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+											/>
+										</div>
+									</div>
+									<div
+										className="form-row"
+										style={{ marginBottom: "20px" }}>
+										<div
+											className="form-group"
+											style={{ flex: 1 }}>
+											<label>Description (Optional)</label>
+											<input
+												type="text"
+												name="description"
+												value={newExpense.description}
+												onChange={handleInputChange}
+												style={{
+													width: "100%",
+													padding: "10px",
+													backgroundColor: "#2d2d2d",
+													border: "1px solid var(--border-color)",
+													borderRadius: "5px",
+													color: "var(--text-light)",
+												}}
+												placeholder="Brief description of the expense"
+											/>
+										</div>
+									</div>
+									<div
+										className="form-buttons"
+										style={{
+											display: "flex",
+											justifyContent: "flex-end",
+											gap: "10px",
+										}}>
+										<button
+											type="button"
+											onClick={() => setShowAddForm(false)}
+											style={{
+												padding: "10px 20px",
+												backgroundColor: "#3d3d3d",
+												border: "none",
+												borderRadius: "5px",
+												color: "var(--text-light)",
+												cursor: "pointer",
+											}}>
+											Cancel
+										</button>
+										<button
+											type="submit"
+											style={{
+												padding: "10px 20px",
+												backgroundColor: "var(--primary-color)",
+												border: "none",
+												borderRadius: "5px",
+												color: "#000",
+												cursor: "pointer",
+												fontWeight: "bold",
+											}}>
+											Save Expense
+										</button>
+									</div>
+								</form>
+							</div>
+						)}
+
+						{/* Expense Stats Cards */}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Total Expenses</h3>
+							<div
+								className="balance-amount loss"
+								style={{ color: "#ff5252" }}>
+								{formatCurrency(total)}
+							</div>
+							<div className="balance-label">
+								From {expenseData.length} transactions
+							</div>
+						</div>
+
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Monthly Average</h3>
+							<div
+								className="balance-amount"
+								style={{ color: "#ff9f43" }}>
+								{formatCurrency(average)}
+							</div>
+							<div className="balance-label">Average monthly spending</div>
+						</div>
+
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Largest Category</h3>
+							<div
+								className="balance-amount"
+								style={{ color: "#5e5ce6" }}>
+								{formatCurrency(largest.amount)}
+							</div>
+							<div className="balance-label">{largest.category}</div>
+						</div>
+
+						{/* Expense Distribution Chart */}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Expense Distribution</h3>
 							<div
 								style={{
-									display: "grid",
-									gridTemplateColumns: "1fr 1fr 1fr 1fr",
-									gap: "15px",
+									height: "300px",
+									position: "relative",
+									display: "flex",
+									justifyContent: "center",
 								}}>
-								<div>
-									<label
-										htmlFor="category"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Category
-									</label>
-									<select
-										id="category"
-										name="category"
-										value={newExpense.category}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}>
-										<option value="">Select Category</option>
-										<option value="Food">Food</option>
-										<option value="Transportation">Transportation</option>
-										<option value="Utilities">Utilities</option>
-										<option value="Housing">Housing</option>
-										<option value="Entertainment">Entertainment</option>
-										<option value="Health">Health</option>
-										<option value="Shopping">Shopping</option>
-										<option value="Education">Education</option>
-										<option value="Other">Other</option>
-									</select>
-								</div>
-								<div>
-									<label
-										htmlFor="amount"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Amount
-									</label>
-									<input
-										type="number"
-										id="amount"
-										name="amount"
-										value={newExpense.amount}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="date"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Date
-									</label>
-									<input
-										type="date"
-										id="date"
-										name="date"
-										value={newExpense.date}
-										onChange={handleInputChange}
-										required
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
-								<div>
-									<label
-										htmlFor="description"
-										style={{ display: "block", marginBottom: "5px" }}>
-										Description
-									</label>
-									<input
-										type="text"
-										id="description"
-										name="description"
-										value={newExpense.description}
-										onChange={handleInputChange}
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "4px",
-											border: "1px solid var(--border-color)",
-											backgroundColor: "#2a2a2a",
-											color: "#fff",
-										}}
-									/>
-								</div>
-							</div>
-							<div style={{ marginTop: "15px", textAlign: "right" }}>
-								<button
-									type="submit"
-									style={{
-										backgroundColor: "#ff6384",
-										color: "white",
-										border: "none",
-										borderRadius: "4px",
-										padding: "8px 15px",
-										cursor: "pointer",
-										fontWeight: "bold",
-									}}>
-									Add Expense
-								</button>
-							</div>
-						</form>
-					</div>
-				)}
-
-				{/* Dashboard Grid */}
-				<div className="dashboard-grid">
-					<div className="dashboard-card card-wide">
-						<h3 className="card-title">Total Expenses</h3>
-						<div className="balance-amount" style={{ color: "#ff6384" }}>
-							{formatCurrency(calculateTotal())}
-						</div>
-						<div className="balance-label">Total for all time</div>
-					</div>
-
-					<div className="dashboard-card card-wide">
-						<h3 className="card-title">Recent Spending</h3>
-						<div className="balance-amount" style={{ color: "#ff6384" }}>
-							{formatCurrency(
-								expenseData
-									.filter(
-										(expense) =>
-											new Date(expense.date) >
-											new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-									)
-									.reduce((total, expense) => total + expense.amount, 0)
-							)}
-						</div>
-						<div className="balance-label">Last 30 days</div>
-					</div>
-
-					<div className="dashboard-card card-wide">
-						<h3 className="card-title">Top Category</h3>
-						<div className="balance-amount">
-							{Object.entries(getExpensesByCategory()).length > 0
-								? Object.entries(getExpensesByCategory()).sort(
-										(a, b) => b[1] - a[1]
-									)[0][0]
-								: "N/A"}
-						</div>
-						<div className="balance-label">
-							{Object.entries(getExpensesByCategory()).length > 0
-								? formatCurrency(
-										Object.entries(getExpensesByCategory()).sort(
-											(a, b) => b[1] - a[1]
-										)[0][1]
-									)
-								: "No expenses yet"}
-						</div>
-					</div>
-
-					{/* Expense Charts */}
-					<div className="dashboard-card card-full">
-						<h3 className="card-title">Monthly Expenses</h3>
-						<div style={{ height: "300px", position: "relative" }}>
-							<Bar data={prepareBarChartData()} options={barChartOptions} />
-						</div>
-					</div>
-
-					<div className="dashboard-card card-full">
-						<h3 className="card-title">Expenses by Category</h3>
-						<div style={{ height: "300px", position: "relative" }}>
-							<Pie data={preparePieChartData()} options={pieChartOptions} />
-						</div>
-					</div>
-
-					{/* Expense List */}
-					<div className="dashboard-card card-full">
-						<div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-							<h3 className="card-title">Expense History</h3>
-							<div style={{ display: "flex", alignItems: "center" }}>
-								<FaFilter style={{ marginRight: "5px", color: "#b3b3b3" }} />
-								<select
-									value={filterCategory}
-									onChange={(e) => setFilterCategory(e.target.value)}
-									style={{
-										padding: "5px 10px",
-										backgroundColor: "#2a2a2a",
-										color: "#b3b3b3",
-										border: "1px solid var(--border-color)",
-										borderRadius: "4px",
-									}}>
-									{getCategories().map((category) => (
-										<option key={category} value={category}>
-											{category.charAt(0).toUpperCase() + category.slice(1)}
-										</option>
-									))}
-								</select>
+								<Pie
+									data={prepareCategoryData()}
+									options={pieOptions}
+								/>
 							</div>
 						</div>
-						<div className="expense-list">
-							<table style={{ width: "100%", borderCollapse: "collapse" }}>
-								<thead>
-									<tr>
-										<th
-											style={{
-												textAlign: "left",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Date
-										</th>
-										<th
-											style={{
-												textAlign: "left",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Category
-										</th>
-										<th
-											style={{
-												textAlign: "left",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Description
-										</th>
-										<th
-											style={{
-												textAlign: "right",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Amount
-										</th>
-										<th
-											style={{
-												textAlign: "center",
-												padding: "10px",
-												borderBottom: "1px solid var(--border-color)",
-											}}>
-											Action
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-									{getFilteredExpenses().length > 0 ? (
-										getFilteredExpenses()
+
+						{/* Expense Trend Chart */}
+						<div className="dashboard-card card-wide">
+							<h3 className="card-title">Monthly Expense Trend</h3>
+							<div style={{ height: "300px", position: "relative" }}>
+								<Line
+									data={prepareChartData()}
+									options={chartOptions}
+								/>
+							</div>
+						</div>
+
+						{/* Expense List */}
+						<div className="dashboard-card card-full">
+							<h3 className="card-title">Recent Expenses</h3>
+							<div className="expense-list">
+								<table style={{ width: "100%", borderCollapse: "collapse" }}>
+									<thead>
+										<tr>
+											<th
+												style={{
+													textAlign: "left",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Date
+											</th>
+											<th
+												style={{
+													textAlign: "left",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Category
+											</th>
+											<th
+												style={{
+													textAlign: "left",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Description
+											</th>
+											<th
+												style={{
+													textAlign: "right",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Amount
+											</th>
+											<th
+												style={{
+													textAlign: "center",
+													padding: "10px",
+													borderBottom: "1px solid var(--border-color)",
+												}}>
+												Status
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										{[...expenseData]
 											.sort((a, b) => new Date(b.date) - new Date(a.date))
-											.map((expense) => (
-												<tr key={expense.id}>
+											.slice(0, 10)
+											.map((expense, index) => (
+												<tr key={index}>
 													<td
 														style={{
 															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
+															borderBottom: "1px solid var(--border-color)",
 														}}>
 														{new Date(expense.date).toLocaleDateString()}
 													</td>
 													<td
 														style={{
 															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
+															borderBottom: "1px solid var(--border-color)",
 														}}>
 														{expense.category}
 													</td>
 													<td
 														style={{
 															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
+															borderBottom: "1px solid var(--border-color)",
 														}}>
-														{expense.description || "-"}
+														{expense.description}
 													</td>
 													<td
 														style={{
 															textAlign: "right",
 															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
-															color: "#ff6384",
-															fontWeight: "bold",
+															borderBottom: "1px solid var(--border-color)",
+															color: "#ff5252",
 														}}>
 														{formatCurrency(expense.amount)}
 													</td>
@@ -604,52 +626,50 @@ const Expenses = ({ user }) => {
 														style={{
 															textAlign: "center",
 															padding: "10px",
-															borderBottom:
-																"1px solid var(--border-color)",
+															borderBottom: "1px solid var(--border-color)",
 														}}>
-														<div
-															style={{
-																display: "flex",
-																alignItems: "center",
-																justifyContent: "center",
-															}}>
-															<button
-																onClick={() =>
-																	handleDeleteExpense(expense.id)
-																}
+														{expense.recurring ? (
+															<span
 																style={{
-																	background: "none",
-																	border: "none",
 																	color: "#ff5252",
-																	cursor: "pointer",
-																	fontSize: "14px",
+																	display: "flex",
+																	alignItems: "center",
+																	justifyContent: "center",
 																}}>
-																Delete
-															</button>
-														</div>
+																<FaArrowDown style={{ marginRight: "5px" }} />{" "}
+																Recurring
+															</span>
+														) : (
+															<span
+																style={{
+																	color: "#ff9f43",
+																	display: "flex",
+																	alignItems: "center",
+																	justifyContent: "center",
+																}}>
+																One-time
+															</span>
+														)}
 													</td>
 												</tr>
-											))
-									) : (
-										<tr>
-											<td
-												colSpan="5"
-												style={{
-													textAlign: "center",
-													padding: "20px",
-													color: "var(--text-secondary)",
-												}}>
-												No expense records found. Add your first expense!
-											</td>
-										</tr>
-									)}
-								</tbody>
-							</table>
+											))}
+										{expenseData.length === 0 && (
+											<tr>
+												<td
+													colSpan="5"
+													style={{ textAlign: "center", padding: "20px" }}>
+													No expense data available
+												</td>
+											</tr>
+										)}
+									</tbody>
+								</table>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 };
 
