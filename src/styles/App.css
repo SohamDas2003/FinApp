@@ -1,19 +1,14 @@
-.app-container {
-	display: flex;
-	min-height: 100vh;
-	background-color: var(--bg-color);
-	color: var(--text-color);
-	font-family: 'Roboto', sans-serif;
-	overflow: hidden;
-}
-
 .sidebar {
-	width: 250px;
+	flex: 0 0 250px;
 	background-color: var(--background-dark);
 	border-right: 1px solid var(--border-color);
 	display: flex;
 	flex-direction: column;
 	padding: 20px 0;
+	height: 100vh;
+	position: sticky;
+	top: 0;
+	transition: flex-basis 0.3s ease-in-out, padding 0.3s ease-in-out; /* Smooth transition for collapse */
 }
 
 .profile-section {
@@ -100,11 +95,9 @@
 }
 
 .main-content {
-	flex: 1;
+	flex: 1 1 auto; /* Allow growing and shrinking, primary scroll area */
 	overflow-y: auto;
-	overflow-x: hidden;
 	padding: 20px;
-	width: 100%;
 	box-sizing: border-box;
 }
 
@@ -146,7 +139,7 @@
 
 .content-section {
 	background-color: #1a1a1a;
-	border-radius: 12px;
+	border-radius: var(--border-radius-large);
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -217,7 +210,7 @@
 
 .dashboard-card {
 	background-color: var(--background-light);
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 15px;
 	color: var(--text-light);
 	box-sizing: border-box;
@@ -432,7 +425,7 @@
 	top: 0;
 	background-color: rgba(255, 255, 255, 0.1);
 	color: var(--text-light);
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	padding: 5px 10px;
 	font-size: 12px;
 	display: flex;
@@ -479,12 +472,11 @@
 }
 
 @media (max-width: 1200px) {
-	.main-content {
-		max-width: calc(100vw - 240px); /* Only account for left sidebar */
-	}
-	
 	.right-sidebar {
-		display: none;
+		display: none; /* Hide right sidebar */
+	}
+	.main-content {
+		max-width: 100%; /* Allow main content to take full width */
 	}
 }
 
@@ -494,53 +486,58 @@
 	}
 
 	.card-full {
-		grid-column: span 2;
+		grid-column: span 2; /* Ensure full-width cards span correctly */
 	}
 }
 
+/* @media (max-width: 992px) - Removed as it's covered by 1200px and 768px breakpoints effectively. */
+
 @media (max-width: 768px) {
 	.dashboard-container {
-		flex-direction: column;
+		flex-direction: column; 
 	}
 	
 	.sidebar {
-		width: 60px;
+		flex: 0 0 60px; 
+		height: auto; 
+		position: relative; 
+		padding: 10px 0; /* Adjust padding for collapsed state */
 	}
 
 	.profile-name,
 	.profile-subtitle,
 	.nav-text {
-		display: none;
+		display: none; 
 	}
 
 	.profile-image {
-		width: 40px;
+		width: 40px; 
 		height: 40px;
+		margin-bottom: 10px; /* Adjust margin for collapsed view */
+	}
+	
+	.profile-section h3, .profile-section p {
+		display: none; /* Hide name and email text in collapsed sidebar */
 	}
 
-	.nav-icon {
-		margin-right: 0;
+	.sidebar .menu-item svg, .sidebar .logout-button svg {
+		margin-right: 0; 
 	}
 
-	.nav-item {
-		justify-content: center;
-		padding: 12px;
+	.sidebar .menu-item, .sidebar .logout-button {
+		justify-content: center; 
+		padding: 10px; /* Adjust padding for icon-only items */
+	}
+	
+	.main-content {
+		padding: 15px; 
 	}
 
 	.dashboard-grid {
-		grid-template-columns: 1fr;
+		grid-template-columns: 1fr; 
 		gap: 12px;
 	}
 	
-	.menu-item svg, .logout-button svg {
-		margin-right: 8px;
-		font-size: 16px;
-	}
-
-	.main-content {
-		padding: 15px;
-	}
-
 	.bar-chart-container {
 		height: 180px;
 	}
@@ -619,7 +616,7 @@
 	width: 8px;
 	height: 8px;
 	margin-right: 6px;
-	border-radius: 2px;
+	border-radius: var(--border-radius-small); /* Or keep as 2px if very specific small radius needed */
 }
 
 .category-name {
@@ -640,7 +637,7 @@
 .news-container {
 	margin-bottom: 20px;
 	background-color: var(--background-light);
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 15px;
 }
 
@@ -702,11 +699,7 @@
 }
 
 /* Make News component responsive */
-@media (max-width: 1200px) {
-	.news-container {
-		display: none;
-	}
-}
+/* News component visibility handled by .right-sidebar hiding */
 
 /* Improved Goal Component Styles */
 .goals-container {
@@ -723,7 +716,7 @@
 
 .goal-card {
 	background-color: #1e1e2d;
-	border-radius: 12px;
+	border-radius: var(--border-radius-large);
 	padding: 20px;
 	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 	transition: transform 0.2s, box-shadow 0.2s;
@@ -758,7 +751,7 @@
 
 .goal-category {
 	padding: 4px 10px;
-	border-radius: 20px;
+	border-radius: 20px; /* This seems like a pill shape, maybe keep or use a specific variable if created */
 	background-color: #2c2c44;
 	font-size: 0.8rem;
 	color: #b8b9cc;
@@ -783,14 +776,14 @@
 .goal-progress-container {
 	height: 8px;
 	background-color: #2c2c44;
-	border-radius: 4px;
+	border-radius: var(--border-radius-small);
 	margin-bottom: 10px;
 	overflow: hidden;
 }
 
 .goal-progress-bar {
 	height: 100%;
-	border-radius: 4px;
+	border-radius: var(--border-radius-small);
 	transition: width 0.5s ease-in-out;
 }
 
@@ -809,7 +802,7 @@
 .goal-status {
 	font-size: 0.85rem;
 	padding: 2px 8px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-small);
 	background-color: #2c2c44;
 }
 
@@ -837,7 +830,7 @@
 	margin-bottom: 12px;
 	padding: 10px;
 	background-color: #2c2c44;
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	max-height: 80px;
 	overflow-y: auto;
 	flex-grow: 1;
@@ -881,7 +874,7 @@
 .update-amount input {
 	width: 100%;
 	padding: 8px;
-	border-radius: 4px;
+	border-radius: var(--border-radius-small);
 	background-color: #2c2c44;
 	color: #ffffff;
 	border: none;
@@ -953,27 +946,16 @@
 
 /* Fixed layout structure */
 .right-sidebar {
-	width: 280px;
-	min-width: 280px;
-	height: 100vh;
+	flex: 0 0 280px; 
 	background-color: var(--background-light);
 	border-left: 1px solid var(--border-color);
 	padding: 20px;
-	overflow-y: auto;
-	position: sticky;
+	overflow-y: auto; 
+	height: 100vh; 
+	position: sticky; 
 	top: 0;
-	z-index: 10;
-}
-
-@media (max-width: 992px) {
-	.right-sidebar {
-		display: none;
-	}
-	
-	.main-content {
-		padding: 20px;
-		width: calc(100% - 80px);
-	}
+	z-index: 10; 
+	transition: flex-basis 0.3s ease-in-out; /* Smooth transition */
 }
 
 /* Financial Health Score Styles */
@@ -986,7 +968,7 @@
 .health-score-circle {
 	width: 120px;
 	height: 120px;
-	border-radius: 50%;
+	border-radius: 50%; /* Circle */
 	border: 8px solid;
 	display: flex;
 	flex-direction: column;
@@ -1033,13 +1015,13 @@
 	flex-grow: 1;
 	height: 8px;
 	background-color: #2c2c44;
-	border-radius: 4px;
+	border-radius: var(--border-radius-small);
 	overflow: hidden;
 }
 
 .breakdown-fill {
 	height: 100%;
-	border-radius: 4px;
+	border-radius: var(--border-radius-small);
 }
 
 .recommendations-card h3 {
@@ -1086,7 +1068,7 @@
 /* Quote styles */
 .quote-container {
 	background-color: var(--background-light);
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 20px;
 	margin-top: 20px;
 }
@@ -1130,23 +1112,8 @@
 	margin-top: 10px;
 }
 
-@media (max-width: 1200px) {
-	.right-sidebar {
-		width: 100%;
-		position: relative;
-		height: auto;
-		border-left: none;
-		border-top: 1px solid var(--border-color);
-	}
-	
-	.news-container {
-		margin-bottom: 15px;
-	}
-	
-	.quote-container {
-		margin-bottom: 15px;
-	}
-}
+/* Redundant media query for .right-sidebar at 1200px, already handled */
+/* News and Quote container adjustments within .right-sidebar are fine */
 
 /* Settings Component Styles */
 .settings-container {
@@ -1158,7 +1125,7 @@
 .settings-nav {
 	min-width: 200px;
 	background-color: var(--card-bg);
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 15px 0;
 }
 
@@ -1190,7 +1157,7 @@
 .settings-content {
 	flex: 1;
 	background-color: var(--card-bg);
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 25px;
 }
 
@@ -1305,7 +1272,7 @@
 	padding: 12px 15px 12px 40px;
 	background-color: #2d2d2d;
 	border: 1px solid var(--border-color);
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	color: var(--text-light);
 	font-size: 0.95rem;
 }
@@ -1342,7 +1309,7 @@
 
 .settings-button {
 	padding: 10px 20px;
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	border: none;
 	cursor: pointer;
 	font-weight: 600;
@@ -1424,7 +1391,7 @@
 	border: 1px solid var(--primary-color);
 	color: var(--primary-color);
 	padding: 8px 15px;
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	cursor: pointer;
 	font-size: 0.9rem;
 	transition: all 0.2s;
@@ -1437,7 +1404,7 @@
 /* Card Forms */
 .card-form {
 	background-color: rgba(0, 0, 0, 0.2);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	padding: 20px;
 	margin-bottom: 20px;
 }
@@ -1460,7 +1427,7 @@
 	align-items: center;
 	padding: 15px;
 	background-color: rgba(255, 255, 255, 0.05);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	transition: transform 0.2s;
 }
 
@@ -1477,7 +1444,7 @@
 	height: 40px;
 	background-color: rgba(54, 249, 174, 0.1);
 	color: var(--primary-color);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	margin-right: 15px;
 	flex-shrink: 0;
 }
@@ -1542,7 +1509,7 @@
 	padding: 20px;
 	color: var(--text-secondary);
 	background-color: rgba(0, 0, 0, 0.2);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 }
 
 /* Privacy Links */
@@ -1559,7 +1526,7 @@
 	color: var(--text-secondary);
 	padding: 12px 15px;
 	background-color: rgba(255, 255, 255, 0.05);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	transition: all 0.2s;
 }
 
@@ -1578,7 +1545,7 @@
 /* Danger Zone */
 .danger-zone {
 	background-color: rgba(255, 82, 82, 0.05);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	padding: 20px;
 	margin-top: 30px;
 }
@@ -1683,7 +1650,7 @@
 
 .feature-card {
 	background-color: var(--background-light);
-	border-radius: 12px;
+	border-radius: var(--border-radius-large);
 	padding: 20px;
 	position: relative;
 	overflow: hidden;
@@ -1707,7 +1674,7 @@
 .feature-icon {
 	width: 40px;
 	height: 40px;
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	background-color: rgba(54, 249, 174, 0.1);
 	display: flex;
 	align-items: center;
@@ -1735,7 +1702,7 @@
 	margin-bottom: 15px;
 	position: relative;
 	background-color: rgba(54, 249, 174, 0.05);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	overflow: hidden;
 	transition: all 0.3s ease;
 }
@@ -1794,7 +1761,7 @@ input:checked ~ .feature-graph .graph-placeholder,
 	bottom: 0;
 	background-color: #2c2c44;
 	transition: .4s;
-	border-radius: 34px;
+	border-radius: 34px; /* This creates the pill shape, likely keep as is or use a specific variable if defined for pill shapes */
 }
 
 .toggle-slider:before {
@@ -1893,7 +1860,7 @@ input:checked + .toggle-slider:before {
 	display: flex;
 	margin-bottom: 1.5rem;
 	background-color: #222222;
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 0.5rem;
 }
 
@@ -1904,7 +1871,7 @@ input:checked + .toggle-slider:before {
 	justify-content: center;
 	padding: 0.75rem;
 	cursor: pointer;
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	transition: background-color 0.3s, color 0.3s;
 	gap: 0.5rem;
 	color: rgba(255, 255, 255, 0.7);
@@ -1952,7 +1919,7 @@ input:checked + .toggle-slider:before {
 
 .financial-card {
 	background-color: #1D1D1D;
-	border-radius: 12px;
+	border-radius: var(--border-radius-large);
 	padding: 1.5rem;
 	position: relative;
 	min-height: 180px;
@@ -2093,7 +2060,7 @@ input:checked + .toggle-slider:before {
 	min-height: 180px;
 	background-color: rgba(54, 249, 174, 0.05);
 	border: 2px dashed rgba(54, 249, 174, 0.3);
-	border-radius: 12px;
+	border-radius: var(--border-radius-large);
 	transition: background-color 0.3s;
 }
 
@@ -2155,7 +2122,7 @@ input:checked + .toggle-slider:before {
 .form-group textarea {
 	width: 100%;
 	padding: 0.75rem;
-	border-radius: 6px;
+	border-radius: var(--border-radius-small);
 	border: 1px solid #333;
 	background-color: #2a2a2a;
 	color: white;
@@ -2175,7 +2142,7 @@ input:checked + .toggle-slider:before {
 
 .form-buttons button {
 	padding: 0.75rem 1.25rem;
-	border-radius: 6px;
+	border-radius: var(--border-radius-small);
 	cursor: pointer;
 	font-weight: 500;
 	transition: all 0.3s;
@@ -2209,7 +2176,7 @@ input:checked + .toggle-slider:before {
 	display: flex;
 	align-items: flex-start;
 	background-color: rgba(54, 174, 249, 0.1);
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	padding: 1rem;
 	gap: 1rem;
 }
@@ -2247,7 +2214,7 @@ input:checked + .toggle-slider:before {
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.75rem 1.5rem;
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	cursor: pointer;
 	transition: all 0.3s ease;
 	background-color: rgba(255, 255, 255, 0.05);
@@ -2264,7 +2231,7 @@ input:checked + .toggle-slider:before {
 
 .settings-content {
 	background-color: rgba(255, 255, 255, 0.05);
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	padding: 2rem;
 }
 
@@ -2281,7 +2248,7 @@ input:checked + .toggle-slider:before {
 
 .success-message, .error-message {
 	padding: 1rem;
-	border-radius: 8px;
+	border-radius: var(--border-radius-medium);
 	margin-bottom: 1.5rem;
 	display: flex;
 	align-items: center;
@@ -2298,7 +2265,7 @@ input:checked + .toggle-slider:before {
 	background-color: rgba(255, 77, 77, 0.2);
 	color: #ff4d4d;
 	padding: 1rem;
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	margin-bottom: 1.5rem;
 }
 
@@ -2326,7 +2293,7 @@ input:checked + .toggle-slider:before {
 	background-color: var(--primary-color);
 	color: white;
 	padding: 0.5rem 1rem;
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	cursor: pointer;
 	transition: all 0.3s ease;
 }
@@ -2339,7 +2306,7 @@ input:checked + .toggle-slider:before {
 	margin-top: 3rem;
 	padding: 1.5rem;
 	border: 1px solid #ff4d4d;
-	border-radius: 10px;
+	border-radius: var(--border-radius-medium);
 	background-color: rgba(255, 77, 77, 0.1);
 }
 
@@ -2353,7 +2320,8 @@ input:checked + .toggle-slider:before {
 	color: white;
 	padding: 0.75rem 1.5rem;
 	border: none;
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
+	border-radius: var(--border-radius-small);
 	margin-top: 1rem;
 	cursor: pointer;
 	transition: all 0.3s ease;
@@ -2392,7 +2360,7 @@ input:checked + .toggle-slider:before {
 	background-color: rgba(255, 77, 77, 0.2);
 	color: #ff4d4d;
 	padding: 1rem;
-	border-radius: 5px;
+	border-radius: var(--border-radius-small);
 	margin-bottom: 1.5rem;
 }
 
@@ -2420,64 +2388,86 @@ input:checked + .toggle-slider:before {
 	}
 }
 
-/* Shared layout styling */
-.app-container {
+/* Shared layout styling - .dashboard-container is now the main wrapper */
+.dashboard-container {
 	display: flex;
 	min-height: 100vh;
-	background-color: var(--background-color);
+	background-color: #121212; /* var(--bg-color) might be preferred */
+	/* overflow: hidden; Removed to prevent clipping sticky elements */
 }
 
-.main-content-wrapper {
-	flex: 1;
-	padding: 20px;
-	overflow-y: auto;
-}
+/* .main-content-wrapper seems to be a duplicate of .main-content, removing for now */
 
 /* Active page indicator in sidebar */
 .menu-item.active {
-	background-color: var(--primary-color);
+	background-color: var(--primary-color); /* Keep this for active state */
 	color: white;
 }
 
 .menu-item.active:hover {
-	background-color: var(--primary-color-dark);
+	background-color: var(--primary-color-dark); /* Keep this for hover on active */
 }
 
 /* Additional responsive fixes */
 @media (max-width: 576px) {
-	.app-container {
-		flex-direction: column;
-	}
+	/* .dashboard-container is already flex-direction: column at 768px */
 	
 	.sidebar {
-		position: relative;
-		width: 100%;
-		height: auto;
+		flex-basis: 100%; /* Full width */
+		height: auto; 
 		min-height: auto;
+		flex-direction: row; 
+		align-items: center; /* Align items vertically in the new top bar */
+		justify-content: space-between; /* Distribute items, FinApp logo on left, menu/logout on right */
+		padding: 0 15px; /* Horizontal padding */
+		position: relative; /* Ensure it's part of the normal flow */
 	}
 	
-	.main-content-wrapper {
+	.sidebar .sidebar-header { /* Keep FinApp title visible */
+		padding: 10px 0;
+	}
+
+	.sidebar .profile-section {
+		display: none; 
+	}
+
+	.sidebar .menu-items {
+		flex-direction: row; 
+		flex-grow: 0; /* Don't let menu items grow excessively */
+		gap: 10px; /* Spacing between menu items */
+	}
+	
+	.sidebar .menu-item, .sidebar .logout-button {
+		padding: 0.5rem 0.5rem; /* Smaller padding */
+		border-left: none; /* Remove left border from active item */
+	}
+	
+	.sidebar .menu-item.active {
+		border-bottom: 2px solid var(--primary-color); 
+		border-left: none;
+		background-color: transparent; 
+		color: var(--primary-color);
+	}
+	
+	.sidebar .menu-item:hover:not(.active) {
+		background-color: rgba(255, 255, 255, 0.1);
+		color: white;
+	}
+
+	.sidebar .logout-button {
+		border-top: none;
+		padding: 0.5rem 0.5rem;
+	}
+	
+	.main-content {
 		padding: 10px;
-	}
-	
-	.menu-items {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.5rem;
-	}
-	
-	.menu-item {
-		padding: 0.5rem 0.75rem;
+		width: 100%; /* Ensure it takes full viewport width in column layout */
+		flex-grow: 1; /* Takes available vertical space */
+		min-height: 0; /* Allow shrinking if content is small */
 	}
 }
 
-/* Dashboard container styling */
-.dashboard-container {
-	display: flex;
-	min-height: 100vh;
-	background-color: #121212;
-}
+/* Final check: Ensure no .app-container styles are lingering if .dashboard-container is the sole wrapper. */
 
 .card-number {
 	font-family: monospace;

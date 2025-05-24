@@ -5,13 +5,17 @@ import {
 	FaArrowDown,
 	FaMoneyBillWave,
 	FaPercentage,
+	FaChartLine,
+	FaWallet,
+	FaExchangeAlt,
+	FaRegCreditCard,
+	FaCog,
+	FaSignOutAlt,
 } from "react-icons/fa";
 import { Pie, Line } from "react-chartjs-2";
 import "../styles/App.css";
-import News from "./News";
 
-const Investments = ({ user }) => {
-	const [activeTab, setActiveTab] = useState("investments");
+const Investments = ({ user, onLogout, onNavigate }) => {
 	const [investmentData, setInvestmentData] = useState([]);
 	const [newInvestment, setNewInvestment] = useState({
 		name: "",
@@ -275,75 +279,9 @@ const Investments = ({ user }) => {
 	const { totalInvestment, totalReturns } = calculateTotals();
 
 	return (
-		<div className="app-container">
-			{/* Sidebar */}
-			<div className="sidebar">
-				<div className="profile">
-					<img
-						src={user.profilePic}
-						alt="Profile"
-						className="profile-image"
-					/>
-					<h3 className="profile-name">{user.name}</h3>
-					<p className="profile-subtitle">Personal Budget</p>
-				</div>
-
-				<ul className="nav-menu">
-					<li
-						className={`nav-item ${activeTab === "overview" ? "active" : ""}`}
-						onClick={() => onNavigate("dashboard")}>
-						<FaChartLine className="nav-icon" />
-						<span className="nav-text">Dashboard</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "income" ? "active" : ""}`}
-						onClick={() => onNavigate("income")}>
-						<FaWallet className="nav-icon" />
-						<span className="nav-text">Income</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "expenses" ? "active" : ""}`}
-						onClick={() => onNavigate("expenses")}>
-						<FaExchangeAlt className="nav-icon" />
-						<span className="nav-text">Expenses</span>
-					</li>
-					<li
-						className={`nav-item ${
-							activeTab === "investments" ? "active" : ""
-						}`}
-						onClick={() => setActiveTab("investments")}>
-						<FaMoneyBillWave className="nav-icon" />
-						<span className="nav-text">Investments</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "cards" ? "active" : ""}`}
-						onClick={() => onNavigate("cards")}>
-						<FaRegCreditCard className="nav-icon" />
-						<span className="nav-text">Cards & Accounts</span>
-					</li>
-					<li
-						className={`nav-item ${activeTab === "settings" ? "active" : ""}`}
-						onClick={() => onNavigate("settings")}>
-						<FaCog className="nav-icon" />
-						<span className="nav-text">Settings</span>
-					</li>
-					<li
-						className="nav-item logout-item"
-						onClick={onLogout}>
-						<FaSignOutAlt className="nav-icon" />
-						<span className="nav-text">Logout</span>
-					</li>
-				</ul>
-
-				{/* News Section */}
-				<News />
-			</div>
-
-			{/* Main Content */}
-			<div className="main-content">
-				<div className="finance-analytics">
-					{/* Header */}
-					<div className="header">
+		<div className="finance-analytics">
+			{/* Header */}
+			<div className="header">
 						<h2 className="header-title">Investment Portfolio</h2>
 						<div className="header-right">
 							<button
@@ -783,8 +721,6 @@ const Investments = ({ user }) => {
 						</div>
 					</div>
 				</div>
-			</div>
-		</div>
 	);
 };
 

@@ -28,4 +28,7 @@ code {
 	--text-light: #ffffff;
 	--text-secondary: #b3b3b3;
 	--border-color: #333333;
+	--border-radius-small: 4px;    /* For small elements like buttons, input fields */
+	--border-radius-medium: 8px;   /* For cards, content containers */
+	--border-radius-large: 12px;   /* For larger containers or specific design accents */
 }

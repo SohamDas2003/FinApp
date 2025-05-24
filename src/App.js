@@ -9,6 +9,7 @@ import {
 	FaArrowUp,
 	FaArrowDown,
 	FaLightbulb,
+	FaSignOutAlt,
 } from "react-icons/fa";
 import {
 	Chart as ChartJS,
@@ -35,6 +36,7 @@ import Settings from "./components/Settings";
 import ProfileSetup from "./components/ProfileSetup";
 import Cards from "./components/Cards";
 import Account from "./components/Account";
+import News from "./components/News";
 
 // Register ChartJS components
 ChartJS.register(
@@ -124,6 +126,11 @@ const SharedLayout = ({ user, onLogout, onNavigate, currentPage, children }) => 
 			{/* Main Content */}
 			<div className="main-content">
 				{children}
+			</div>
+
+			{/* Right Sidebar */}
+			<div className="right-sidebar">
+				<News />
 			</div>
 		</div>
 	);
